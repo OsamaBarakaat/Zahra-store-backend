@@ -44,6 +44,7 @@ const common_1 = require("@nestjs/common");
 const config_1 = require("@nestjs/config");
 const serve_static_1 = require("@nestjs/serve-static");
 const path = __importStar(require("path"));
+const fs = __importStar(require("fs"));
 const app_controller_1 = require("./app.controller");
 const app_service_1 = require("./app.service");
 const prisma_module_1 = require("./prisma/prisma.module");
@@ -58,6 +59,8 @@ const storage_module_1 = require("./storage/storage.module");
 const admin_module_1 = require("./admin/admin.module");
 const customers_module_1 = require("./customers/customers.module");
 const expenses_module_1 = require("./expenses/expenses.module");
+const uploadsPath = path.resolve(process.cwd(), 'uploads');
+const publicPath = path.resolve(process.cwd(), 'public');
 let AppModule = class AppModule {
 };
 exports.AppModule = AppModule;
@@ -69,10 +72,10 @@ exports.AppModule = AppModule = __decorate([
                 envFilePath: '.env',
             }),
             serve_static_1.ServeStaticModule.forRoot({
-                rootPath: path.resolve(process.cwd(), 'uploads'),
+                rootPath: fs.existsSync(uploadsPath) ? uploadsPath : (process.env.VERCEL ? '/tmp' : process.cwd()),
                 serveRoot: '/uploads',
             }, {
-                rootPath: path.resolve(process.cwd(), 'public'),
+                rootPath: fs.existsSync(publicPath) ? publicPath : (process.env.VERCEL ? '/tmp' : process.cwd()),
                 serveRoot: '/admin',
             }),
             prisma_module_1.PrismaModule,

@@ -6,6 +6,16 @@ export class PrismaService extends PrismaClient implements OnModuleInit, OnModul
   private readonly logger = new Logger(PrismaService.name);
   public isConnected = false;
 
+  constructor() {
+    super({
+      datasources: {
+        db: {
+          url: process.env.DATABASE_URL || 'postgresql://postgres:postgres@localhost:5432/postgres',
+        },
+      },
+    });
+  }
+
   async onModuleInit() {
     try {
       await this.$connect();

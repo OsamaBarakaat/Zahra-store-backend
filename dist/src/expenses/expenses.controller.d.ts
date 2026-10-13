@@ -25,12 +25,12 @@ export declare class ExpensesController {
         id: string;
     }>;
     delete(id: string): Promise<{
+        category: string;
+        title: string;
         id: string;
         created_at: Date;
         updated_at: Date;
-        category: string;
         notes: string | null;
-        title: string;
         amount: import("@prisma/client/runtime/library").Decimal;
         date: Date;
     } | {

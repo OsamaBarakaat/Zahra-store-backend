@@ -32,64 +32,92 @@ var __importStar = (this && this.__importStar) || (function () {
         return result;
     };
 })();
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.bootstrapApp = bootstrapApp;
+exports.default = handler;
 const core_1 = require("@nestjs/core");
 const common_1 = require("@nestjs/common");
 const swagger_1 = require("@nestjs/swagger");
+const platform_express_1 = require("@nestjs/platform-express");
 const app_module_1 = require("./app.module");
+const express_1 = __importDefault(require("express"));
 const fs = __importStar(require("fs"));
 const path = __importStar(require("path"));
-async function bootstrap() {
-    const logger = new common_1.Logger('ZahraStoreBackend');
-    const uploadsDir = path.resolve(process.cwd(), 'uploads');
-    const publicDir = path.resolve(process.cwd(), 'public');
-    if (!fs.existsSync(uploadsDir))
-        fs.mkdirSync(uploadsDir, { recursive: true });
-    if (!fs.existsSync(publicDir))
-        fs.mkdirSync(publicDir, { recursive: true });
-    const app = await core_1.NestFactory.create(app_module_1.AppModule);
-    app.enableCors({
-        origin: '*',
-        credentials: true,
-        methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
-        allowedHeaders: 'Content-Type,Accept,Authorization',
-    });
-    app.useGlobalPipes(new common_1.ValidationPipe({
-        whitelist: true,
-        transform: true,
-        forbidNonWhitelisted: false,
-        transformOptions: { enableImplicitConversion: true },
-    }));
-    app.setGlobalPrefix('api', {
-        exclude: ['admin', 'uploads'],
-    });
-    const config = new swagger_1.DocumentBuilder()
-        .setTitle('🌸 متجر زهرة (Zahra Store) API')
-        .setDescription('الواجهة البرمجية المتكاملة للـ Backend ولوحة التحكم لمتجر زهرة (NestJS, Supabase, Prisma ORM).\n\n' +
-        'تشمل الموديولات: المنتجات والأقسام، السلة والطلبات، تدفق تفصيل كراسي السفرة العمولة، والمحافظات والشحن.')
-        .setVersion('1.0')
-        .addBearerAuth({
-        type: 'http',
-        scheme: 'bearer',
-        bearerFormat: 'JWT',
-        name: 'JWT',
-        description: 'أدخل توكن الـ JWT هنا لحماية مسارات الإدارة',
-        in: 'header',
-    }, 'JWT')
-        .build();
-    const document = swagger_1.SwaggerModule.createDocument(app, config);
-    swagger_1.SwaggerModule.setup('api/docs', app, document, {
-        customSiteTitle: 'توثيق واجهات متجر زهرة | Zahra Store API Docs',
-        customCss: `
-      .swagger-ui .topbar { background-color: #be185d; }
-      .swagger-ui .info .title { color: #831843; font-family: Cairo, Tahoma, sans-serif; }
-    `,
-    });
-    const port = process.env.PORT || 3000;
-    await app.listen(port);
-    logger.log(`🚀 خادم متجر زهرة يعمل الآن بنجاح على: http://localhost:${port}`);
-    logger.log(`📚 توثيق Swagger التفاعلي متاح على: http://localhost:${port}/api/docs`);
-    logger.log(`🎛️ لوحة تحكم المتجر (Admin Dashboard) متاحة على: http://localhost:${port}/admin`);
+const server = (0, express_1.default)();
+let isAppInitialized = false;
+async function bootstrapApp() {
+    if (!isAppInitialized) {
+        try {
+            const uploadsDir = process.env.VERCEL ? '/tmp/uploads' : path.resolve(process.cwd(), 'uploads');
+            const publicDir = path.resolve(process.cwd(), 'public');
+            if (!fs.existsSync(uploadsDir))
+                fs.mkdirSync(uploadsDir, { recursive: true });
+            if (!process.env.VERCEL && !fs.existsSync(publicDir))
+                fs.mkdirSync(publicDir, { recursive: true });
+        }
+        catch {
+        }
+        const app = await core_1.NestFactory.create(app_module_1.AppModule, new platform_express_1.ExpressAdapter(server));
+        app.enableCors({
+            origin: '*',
+            credentials: true,
+            methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
+            allowedHeaders: 'Content-Type,Accept,Authorization',
+        });
+        app.useGlobalPipes(new common_1.ValidationPipe({
+            whitelist: true,
+            transform: true,
+            forbidNonWhitelisted: false,
+            transformOptions: { enableImplicitConversion: true },
+        }));
+        app.setGlobalPrefix('api', {
+            exclude: ['admin', 'uploads'],
+        });
+        const config = new swagger_1.DocumentBuilder()
+            .setTitle('🌸 متجر زهرة (Zahra Store) API')
+            .setDescription('الواجهة البرمجية المتكاملة للـ Backend ولوحة التحكم لمتجر زهرة (NestJS, Supabase, Prisma ORM).\n\n' +
+            'تشمل الموديولات: المنتجات والأقسام، السلة والطلبات، تدفق تفصيل كراسي السفرة العمولة، والمحافظات والشحن.')
+            .setVersion('1.0')
+            .addBearerAuth({
+            type: 'http',
+            scheme: 'bearer',
+            bearerFormat: 'JWT',
+            name: 'JWT',
+            description: 'أدخل توكن الـ JWT هنا لحماية مسارات الإدارة',
+            in: 'header',
+        }, 'JWT')
+            .build();
+        const document = swagger_1.SwaggerModule.createDocument(app, config);
+        swagger_1.SwaggerModule.setup('api/docs', app, document, {
+            customSiteTitle: 'توثيق واجهات متجر زهرة | Zahra Store API Docs',
+            customCss: `
+        .swagger-ui .topbar { background-color: #be185d; }
+        .swagger-ui .info .title { color: #831843; font-family: Cairo, Tahoma, sans-serif; }
+      `,
+        });
+        await app.init();
+        isAppInitialized = true;
+    }
+    return server;
 }
-bootstrap();
+if (!process.env.VERCEL) {
+    async function startStandalone() {
+        const logger = new common_1.Logger('ZahraStoreBackend');
+        const expressInstance = await bootstrapApp();
+        const port = process.env.PORT || 3000;
+        expressInstance.listen(port, () => {
+            logger.log(`🚀 خادم متجر زهرة يعمل الآن بنجاح على: http://localhost:${port}`);
+            logger.log(`📚 توثيق Swagger التفاعلي متاح على: http://localhost:${port}/api/docs`);
+            logger.log(`🎛️ لوحة تحكم المتجر (Admin Dashboard) متاحة على: http://localhost:${port}/admin`);
+        });
+    }
+    startStandalone();
+}
+async function handler(req, res) {
+    const expressInstance = await bootstrapApp();
+    return expressInstance(req, res);
+}
 //# sourceMappingURL=main.js.map

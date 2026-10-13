@@ -2,6 +2,7 @@ import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { ServeStaticModule } from '@nestjs/serve-static';
 import * as path from 'path';
+import * as fs from 'fs';
 
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
@@ -19,6 +20,9 @@ import { AdminModule } from './admin/admin.module';
 import { CustomersModule } from './customers/customers.module';
 import { ExpensesModule } from './expenses/expenses.module';
 
+const uploadsPath = path.resolve(process.cwd(), 'uploads');
+const publicPath = path.resolve(process.cwd(), 'public');
+
 @Module({
   imports: [
     ConfigModule.forRoot({
@@ -27,11 +31,11 @@ import { ExpensesModule } from './expenses/expenses.module';
     }),
     ServeStaticModule.forRoot(
       {
-        rootPath: path.resolve(process.cwd(), 'uploads'),
+        rootPath: fs.existsSync(uploadsPath) ? uploadsPath : (process.env.VERCEL ? '/tmp' : process.cwd()),
         serveRoot: '/uploads',
       },
       {
-        rootPath: path.resolve(process.cwd(), 'public'),
+        rootPath: fs.existsSync(publicPath) ? publicPath : (process.env.VERCEL ? '/tmp' : process.cwd()),
         serveRoot: '/admin',
       },
     ),

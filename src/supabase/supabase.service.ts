@@ -74,13 +74,17 @@ export class SupabaseService {
     }
 
     // Local file fallback
-    const uploadsDir = path.resolve(process.cwd(), 'uploads', bucket);
-    if (!fs.existsSync(uploadsDir)) {
-      fs.mkdirSync(uploadsDir, { recursive: true });
+    const basePath = process.env.VERCEL ? path.resolve('/tmp', 'uploads') : path.resolve(process.cwd(), 'uploads');
+    const uploadsDir = path.resolve(basePath, bucket);
+    try {
+      if (!fs.existsSync(uploadsDir)) {
+        fs.mkdirSync(uploadsDir, { recursive: true });
+      }
+      const fullPath = path.join(uploadsDir, filePath);
+      fs.writeFileSync(fullPath, fileBuffer);
+    } catch (e) {
+      this.logger.warn(`Could not save local file fallback: ${e.message}`);
     }
-
-    const fullPath = path.join(uploadsDir, filePath);
-    fs.writeFileSync(fullPath, fileBuffer);
     return `/uploads/${bucket}/${filePath}`;
   }
 
@@ -102,10 +106,13 @@ export class SupabaseService {
     if (this.supabaseClient) {
       await this.supabaseClient.storage.from(bucket).remove([filePath]);
     } else {
-      const fullPath = path.resolve(process.cwd(), 'uploads', bucket, filePath);
-      if (fs.existsSync(fullPath)) {
-        fs.unlinkSync(fullPath);
-      }
+      const basePath = process.env.VERCEL ? path.resolve('/tmp', 'uploads') : path.resolve(process.cwd(), 'uploads');
+      const fullPath = path.resolve(basePath, bucket, filePath);
+      try {
+        if (fs.existsSync(fullPath)) {
+          fs.unlinkSync(fullPath);
+        }
+      } catch {}
     }
   }
 }
