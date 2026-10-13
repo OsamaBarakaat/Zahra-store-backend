@@ -1,0 +1,163 @@
+import { PrismaService } from '../prisma/prisma.service';
+import { CreateCategoryDto } from './dto/create-category.dto';
+import { UpdateCategoryDto } from './dto/update-category.dto';
+export declare class CategoriesService {
+    private prisma;
+    constructor(prisma: PrismaService);
+    findAll(activeOnly?: boolean): Promise<{
+        id: string;
+        slug: string;
+        name: string;
+        name_ar: string;
+        description: string;
+        image: string;
+        image_url: string;
+        productCount: number;
+        featured: boolean;
+        is_featured: boolean;
+        sort_order: number;
+        is_active: boolean;
+    }[]>;
+    findBySlug(slug: string): Promise<{
+        id: string;
+        slug: string;
+        name: string;
+        name_ar: string;
+        description: string;
+        image: string;
+        image_url: string;
+        productCount: number;
+        featured: boolean;
+        is_featured: boolean;
+        sort_order: number;
+        is_active: boolean;
+    }>;
+    create(dto: CreateCategoryDto): Promise<{
+        id: string;
+        is_active: boolean;
+        created_at: Date;
+        updated_at: Date;
+        slug: string;
+        name_ar: string;
+        description: string | null;
+        image_url: string | null;
+        sort_order: number;
+        is_featured: boolean;
+    } | {
+        name: string;
+        image: string;
+        productCount: number;
+        featured: boolean;
+        sort_order: number;
+        is_active: boolean;
+        name_ar: string;
+        slug: string;
+        description?: string;
+        image_url?: string;
+        is_featured?: boolean;
+        id: string;
+    }>;
+    update(id: string, dto: UpdateCategoryDto): Promise<{
+        id: string;
+        is_active: boolean;
+        created_at: Date;
+        updated_at: Date;
+        slug: string;
+        name_ar: string;
+        description: string | null;
+        image_url: string | null;
+        sort_order: number;
+        is_featured: boolean;
+    } | {
+        id: string;
+        slug: string;
+        name: string;
+        name_ar: string;
+        description: string;
+        image: string;
+        image_url: string;
+        productCount: number;
+        featured: boolean;
+        is_featured: boolean;
+        sort_order: number;
+        is_active: boolean;
+    }>;
+    findProducts(slug: string): Promise<{
+        id: string;
+        slug: string;
+        name: string;
+        name_ar: string;
+        description: string;
+        price: number;
+        originalPrice: number | undefined;
+        discount: number | undefined;
+        images: {
+            id: string;
+            url: string;
+            alt: string;
+        }[];
+        category: string;
+        categoryName: string;
+        variants: {
+            id: string;
+            name: string;
+            type: string;
+            value: string;
+            available: boolean;
+            priceModifier: number;
+        }[];
+        rating: number;
+        reviewCount: number;
+        isNew: boolean;
+        isFeatured: boolean;
+        isOnSale: boolean;
+        inStock: boolean;
+        stockCount: number;
+        isChairCover: boolean;
+    }[] | {
+        id: string;
+        slug: string;
+        name: string;
+        description: string;
+        price: number;
+        originalPrice: number;
+        discount: number;
+        images: {
+            id: string;
+            url: string;
+            alt: string;
+        }[];
+        category: string;
+        categoryName: string;
+        variants: never[];
+        rating: number;
+        reviewCount: number;
+        inStock: boolean;
+        isChairCover: boolean;
+    }[]>;
+    delete(id: string): Promise<{
+        id: string;
+        is_active: boolean;
+        created_at: Date;
+        updated_at: Date;
+        slug: string;
+        name_ar: string;
+        description: string | null;
+        image_url: string | null;
+        sort_order: number;
+        is_featured: boolean;
+    } | {
+        id: string;
+        slug: string;
+        name: string;
+        name_ar: string;
+        description: string;
+        image: string;
+        image_url: string;
+        productCount: number;
+        featured: boolean;
+        is_featured: boolean;
+        sort_order: number;
+        is_active: boolean;
+    }>;
+}

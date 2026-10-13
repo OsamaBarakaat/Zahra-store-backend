@@ -1,0 +1,229 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+model Category {
+  id          String    @id @default(uuid())
+  slug        String    @unique
+  name_ar     String
+  description String?
+  image_url   String?
+  sort_order  Int       @default(0)
+  is_active   Boolean   @default(true)
+  is_featured Boolean   @default(false)
+  created_at  DateTime  @default(now())
+  updated_at  DateTime  @updatedAt
+
+  products Product[]
+
+  @@map("categories")
+}
+
+model Product {
+  id               String           @id @default(uuid())
+  category_id      String
+  slug             String           @unique
+  name_ar          String
+  description_ar   String
+  base_price       Decimal          @db.Decimal(10, 2)
+  original_price   Decimal?         @db.Decimal(10, 2)
+  discount_percent Int?
+  material         String?
+  dimensions       String?
+  rating           Float            @default(4.9)
+  review_count     Int              @default(0)
+  is_featured      Boolean          @default(false)
+  isOnSale         Boolean          @default(false) @map("is_on_sale")
+  is_new           Boolean          @default(false)
+  is_active        Boolean          @default(true)
+  in_stock         Boolean          @default(true)
+  stock_quantity   Int              @default(10)
+  is_chair_cover   Boolean          @default(false)
+  sku              String?
+  tags             String?
+  created_at       DateTime         @default(now())
+  updated_at       DateTime         @updatedAt
+
+  category    Category         @relation(fields: [category_id], references: [id], onDelete: Cascade)
+  images      ProductImage[]
+  variants    ProductVariant[]
+  order_items OrderItem[]
+
+  @@index([category_id])
+  @@map("products")
+}
+
+model ProductImage {
+  id         String   @id @default(uuid())
+  product_id String
+  image_url  String
+  alt_text   String?
+  is_primary Boolean  @default(false)
+  sort_order Int      @default(0)
+  created_at DateTime @default(now())
+
+  product Product @relation(fields: [product_id], references: [id], onDelete: Cascade)
+
+  @@index([product_id])
+  @@map("product_images")
+}
+
+model ProductVariant {
+  id               String   @id @default(uuid())
+  product_id       String
+  variant_type     String // color, size, material, pattern, cover_type
+  name_ar          String
+  value            String // Hex code for color, or label for others
+  price_adjustment Decimal  @default(0) @db.Decimal(10, 2)
+  is_available     Boolean  @default(true)
+  image_url        String?
+  created_at       DateTime @default(now())
+
+  product Product @relation(fields: [product_id], references: [id], onDelete: Cascade)
+
+  @@index([product_id])
+  @@map("product_variants")
+}
+
+model ShippingZone {
+  id                  String   @id @default(uuid())
+  governorate_name_ar String   @unique
+  shipping_fee        Decimal  @db.Decimal(10, 2)
+  estimated_days      String   @default("2-4 أيام عمل")
+  is_active           Boolean  @default(true)
+  created_at          DateTime @default(now())
+  updated_at          DateTime @updatedAt
+
+  orders Order[]
+
+  @@map("shipping_zones")
+}
+
+model Customer {
+  id             String    @id @default(uuid())
+  full_name      String
+  phone          String    @unique
+  email          String?
+  governorate    String?
+  city           String?
+  street_address String?
+  notes          String?
+  total_spent    Decimal   @default(0) @db.Decimal(10, 2)
+  orders_count   Int       @default(0)
+  created_at     DateTime  @default(now())
+  updated_at     DateTime  @updatedAt
+
+  @@map("customers")
+}
+
+model Order {
+  id                       String    @id @default(uuid())
+  order_number             String    @unique // e.g. ZHR-102938
+  customer_name            String
+  customer_phone           String
+  customer_alternate_phone String?
+  customer_email           String?
+  shipping_zone_id         String?
+  governorate              String
+  city                     String
+  street_address           String
+  apartment                String?
+  notes                    String?
+  subtotal                 Decimal   @db.Decimal(10, 2)
+  shipping_cost            Decimal   @db.Decimal(10, 2)
+  discount                 Decimal   @default(0) @db.Decimal(10, 2)
+  total_amount             Decimal   @db.Decimal(10, 2)
+  payment_method           String    @default("cod") // cod, vodafone_cash, instapay
+  payment_reference        String?
+  status                   String    @default("pending") // pending, confirmed, processing, shipped, delivered, cancelled
+  estimated_delivery       String?
+  created_at               DateTime  @default(now())
+  updated_at               DateTime  @updatedAt
+
+  shipping_zone   ShippingZone?        @relation(fields: [shipping_zone_id], references: [id], onDelete: SetNull)
+  items           OrderItem[]
+  custom_requests CustomChairRequest[]
+
+  @@index([customer_phone])
+  @@index([order_number])
+  @@index([status])
+  @@map("orders")
+}
+
+model OrderItem {
+  id                 String  @id @default(uuid())
+  order_id           String
+  product_id         String?
+  product_name       String
+  product_image      String?
+  selected_variants  String? // JSON string: {"لون القماش": "وردي غامق", ...}
+  custom_chair_image String? // URL of uploaded chair photo
+  custom_notes       String?
+  quantity           Int     @default(1)
+  unit_price         Decimal @db.Decimal(10, 2)
+  total_price        Decimal @db.Decimal(10, 2)
+
+  order                Order               @relation(fields: [order_id], references: [id], onDelete: Cascade)
+  product              Product?            @relation(fields: [product_id], references: [id], onDelete: SetNull)
+  custom_chair_request CustomChairRequest?
+
+  @@index([order_id])
+  @@map("order_items")
+}
+
+model CustomChairRequest {
+  id                 String   @id @default(uuid())
+  order_id           String?
+  order_item_id      String?  @unique
+  customer_name      String
+  customer_phone     String
+  chair_type         String   @default("عمولة") // عادي, عمولة
+  fabric_color       String
+  pattern_type       String
+  chairs_count       Int      @default(6)
+  uploaded_photo_url String
+  custom_extra_fee   Decimal  @default(200) @db.Decimal(10, 2)
+  status             String   @default("new") // new, contacted, in_tailoring, completed, cancelled
+  admin_notes        String?
+  created_at         DateTime @default(now())
+  updated_at         DateTime @updatedAt
+
+  order      Order?     @relation(fields: [order_id], references: [id], onDelete: SetNull)
+  order_item OrderItem? @relation(fields: [order_item_id], references: [id], onDelete: SetNull)
+
+  @@index([customer_phone])
+  @@index([status])
+  @@map("custom_chair_requests")
+}
+
+model Expense {
+  id          String   @id @default(uuid())
+  title       String
+  category    String   // بضاعة, خامات_وتفصيل, شحن, تسويق, إيجار_ومصاريف, أخرى
+  amount      Decimal  @db.Decimal(10, 2)
+  date        DateTime @default(now())
+  notes       String?
+  created_at  DateTime @default(now())
+  updated_at  DateTime @updatedAt
+
+  @@map("expenses")
+}
+
+model AdminUser {
+  id            String   @id @default(uuid())
+  email         String   @unique
+  password_hash String
+  full_name     String
+  role          String   @default("ADMIN") // ADMIN, MANAGER, SUPPORT
+  is_active     Boolean  @default(true)
+  created_at    DateTime @default(now())
+  updated_at    DateTime @updatedAt
+
+  @@map("admin_users")
+}

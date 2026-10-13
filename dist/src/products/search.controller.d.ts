@@ -1,0 +1,149 @@
+import { ProductsService } from './products.service';
+export declare class SearchController {
+    private readonly productsService;
+    constructor(productsService: ProductsService);
+    search(query: string): Promise<({
+        id: string;
+        slug: string;
+        name: string;
+        description: string;
+        price: number;
+        originalPrice: number;
+        discount: number;
+        images: {
+            id: string;
+            url: string;
+            alt: string;
+        }[];
+        category: string;
+        categoryName: string;
+        isChairCover: boolean;
+        variants: ({
+            id: string;
+            name: string;
+            type: string;
+            value: string;
+            available: boolean;
+            priceModifier?: undefined;
+        } | {
+            id: string;
+            name: string;
+            type: string;
+            value: string;
+            available: boolean;
+            priceModifier: number;
+        })[];
+        rating: number;
+        reviewCount: number;
+        isNew: boolean;
+        isFeatured: boolean;
+        isOnSale: boolean;
+        inStock: boolean;
+        stockCount: number;
+        material: string;
+    } | {
+        id: string;
+        slug: string;
+        name: string;
+        description: string;
+        price: number;
+        originalPrice: number;
+        discount: number;
+        images: {
+            id: string;
+            url: string;
+            alt: string;
+        }[];
+        category: string;
+        categoryName: string;
+        variants: ({
+            id: string;
+            name: string;
+            type: string;
+            value: string;
+            available: boolean;
+            priceModifier?: undefined;
+        } | {
+            id: string;
+            name: string;
+            type: string;
+            value: string;
+            available: boolean;
+            priceModifier: number;
+        })[];
+        rating: number;
+        reviewCount: number;
+        isNew: boolean;
+        isFeatured: boolean;
+        isOnSale: boolean;
+        inStock: boolean;
+        stockCount: number;
+        material: string;
+        isChairCover?: undefined;
+    } | {
+        id: string;
+        slug: string;
+        name: string;
+        description: string;
+        price: number;
+        images: {
+            id: string;
+            url: string;
+            alt: string;
+        }[];
+        category: string;
+        categoryName: string;
+        variants: {
+            id: string;
+            name: string;
+            type: string;
+            value: string;
+            available: boolean;
+        }[];
+        rating: number;
+        reviewCount: number;
+        isNew: boolean;
+        isFeatured: boolean;
+        isOnSale: boolean;
+        inStock: boolean;
+        stockCount: number;
+        material: string;
+        originalPrice?: undefined;
+        discount?: undefined;
+        isChairCover?: undefined;
+    })[] | {
+        id: any;
+        slug: any;
+        name: any;
+        name_ar: any;
+        description: any;
+        description_ar: any;
+        price: number;
+        base_price: number;
+        originalPrice: number | undefined;
+        original_price: number | undefined;
+        discount: any;
+        discount_percent: any;
+        images: any;
+        category: any;
+        categoryName: any;
+        category_id: any;
+        variants: any;
+        rating: any;
+        reviewCount: any;
+        isNew: any;
+        is_new: any;
+        isFeatured: any;
+        is_featured: any;
+        isOnSale: any;
+        is_on_sale: any;
+        inStock: any;
+        in_stock: any;
+        stockCount: any;
+        stock_quantity: any;
+        material: any;
+        dimensions: any;
+        isChairCover: any;
+        is_chair_cover: any;
+    }[]>;
+}
