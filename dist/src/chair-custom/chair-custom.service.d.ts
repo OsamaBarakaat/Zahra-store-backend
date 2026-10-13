@@ -40,24 +40,6 @@ export declare class ChairCustomService {
         uploaded_photo_url: string;
         admin_notes: string | null;
         order_item_id: string | null;
-    }[] | {
-        whatsapp_link: string;
-        id: string;
-        order_id: string;
-        customer_name: string;
-        customer_phone: string;
-        chair_type: string;
-        fabric_color: string;
-        pattern_type: string;
-        chairs_count: number;
-        uploaded_photo_url: string;
-        custom_extra_fee: number;
-        status: string;
-        admin_notes: string;
-        created_at: string;
-        order: {
-            order_number: string;
-        };
     }[]>;
     findOne(id: string): Promise<{
         custom_extra_fee: number;

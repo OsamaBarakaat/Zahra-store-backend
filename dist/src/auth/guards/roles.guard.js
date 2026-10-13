@@ -13,6 +13,11 @@ exports.RolesGuard = void 0;
 const common_1 = require("@nestjs/common");
 const core_1 = require("@nestjs/core");
 const roles_decorator_1 = require("../decorators/roles.decorator");
+const DEFAULT_ROLE_PERMS = {
+    ADMIN: ['overview', 'products', 'categories', 'orders', 'custom_chairs', 'customers', 'expenses', 'shipping', 'staff'],
+    MANAGER: ['overview', 'products', 'categories', 'orders', 'custom_chairs', 'customers', 'shipping'],
+    SUPPORT: ['overview', 'orders', 'custom_chairs'],
+};
 let RolesGuard = class RolesGuard {
     reflector;
     constructor(reflector) {
@@ -26,15 +31,40 @@ let RolesGuard = class RolesGuard {
         if (!requiredRoles || requiredRoles.length === 0) {
             return true;
         }
-        const { user } = context.switchToHttp().getRequest();
+        const req = context.switchToHttp().getRequest();
+        const { user } = req;
         if (!user || !user.role) {
             throw new common_1.ForbiddenException('ليس لديك الصلاحيات الكافية للوصول إلى هذا الإجراء');
         }
-        const hasRole = requiredRoles.includes(user.role);
-        if (!hasRole) {
-            throw new common_1.ForbiddenException(`يتطلب هذا الإجراء صلاحيات: ${requiredRoles.join(', ')}`);
+        if (user.role === 'ADMIN') {
+            return true;
         }
-        return true;
+        if (requiredRoles.includes(user.role)) {
+            return true;
+        }
+        const perms = Array.isArray(user.permissions) && user.permissions.length > 0
+            ? user.permissions
+            : DEFAULT_ROLE_PERMS[user.role] || [];
+        const path = (req.route?.path || req.url || '').toLowerCase();
+        if (path.includes('order') && perms.includes('orders'))
+            return true;
+        if (path.includes('chair') && perms.includes('custom_chairs'))
+            return true;
+        if (path.includes('product') && perms.includes('products'))
+            return true;
+        if (path.includes('categor') && perms.includes('categories'))
+            return true;
+        if (path.includes('customer') && perms.includes('customers'))
+            return true;
+        if (path.includes('expense') && perms.includes('expenses'))
+            return true;
+        if (path.includes('shipping') && perms.includes('shipping'))
+            return true;
+        if (path.includes('admin/users') && perms.includes('staff'))
+            return true;
+        if (path.includes('admin/overview') && perms.includes('overview'))
+            return true;
+        throw new common_1.ForbiddenException(`يتطلب هذا الإجراء صلاحيات: ${requiredRoles.join(', ')}`);
     }
 };
 exports.RolesGuard = RolesGuard;

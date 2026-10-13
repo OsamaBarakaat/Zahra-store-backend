@@ -46,6 +46,7 @@ const app_module_1 = require("./app.module");
 const express_1 = __importDefault(require("express"));
 const fs = __importStar(require("fs"));
 const path = __importStar(require("path"));
+const admin_html_1 = require("./admin-html");
 const server = (0, express_1.default)();
 let isAppInitialized = false;
 async function bootstrapApp() {
@@ -73,8 +74,12 @@ async function bootstrapApp() {
             forbidNonWhitelisted: false,
             transformOptions: { enableImplicitConversion: true },
         }));
+        server.get(['/', '/admin', '/admin/{*path}', '/index.html'], (req, res) => {
+            res.setHeader('Content-Type', 'text/html; charset=utf-8');
+            return res.send(admin_html_1.EMBEDDED_ADMIN_HTML);
+        });
         app.setGlobalPrefix('api', {
-            exclude: ['admin', 'admin/(.*)', 'uploads/(.*)', '', 'index.html'],
+            exclude: ['uploads/(.*)'],
         });
         const config = new swagger_1.DocumentBuilder()
             .setTitle('🌸 متجر زهرة (Zahra Store) API')

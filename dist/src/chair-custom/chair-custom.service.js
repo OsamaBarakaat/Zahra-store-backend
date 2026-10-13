@@ -151,19 +151,10 @@ let ChairCustomService = class ChairCustomService {
             }
             catch (err) {
                 console.warn('Prisma error in findAll custom requests:', err.message);
+                return [];
             }
         }
-        let list = [...MOCK_CUSTOM_REQUESTS];
-        if (query.status)
-            list = list.filter((r) => r.status === query.status);
-        if (query.search) {
-            const s = query.search.toLowerCase();
-            list = list.filter((r) => r.customer_name.includes(s) || r.customer_phone.includes(s));
-        }
-        return list.map((r) => ({
-            ...r,
-            whatsapp_link: this.generateWhatsAppLink(r),
-        }));
+        return [];
     }
     async findOne(id) {
         if (this.prisma.isConnected) {

@@ -39,52 +39,6 @@ export declare class OrdersService {
             createdAt: any;
             estimatedDelivery: any;
         }[];
-    } | {
-        total: number;
-        page: number;
-        limit: number;
-        orders: {
-            id: string;
-            orderNumber: string;
-            customer: {
-                firstName: string;
-                lastName: string;
-                phone: string;
-                email: string;
-            };
-            address: {
-                governorate: string;
-                city: string;
-                street: string;
-                apartment: string;
-                notes: string;
-            };
-            items: {
-                id: string;
-                productId: string;
-                slug: string;
-                name: string;
-                price: number;
-                originalPrice: number;
-                image: string;
-                quantity: number;
-                selectedVariants: {
-                    '\u0644\u0648\u0646 \u0627\u0644\u0642\u0645\u0627\u0634': string;
-                    '\u0634\u0643\u0644 \u0627\u0644\u0646\u0642\u0634\u0629': string;
-                    '\u0646\u0648\u0639 \u0627\u0644\u062A\u0644\u0628\u064A\u0633\u0629': string;
-                };
-                customChairImage: string;
-                customNotes: string;
-            }[];
-            paymentMethod: string;
-            subtotal: number;
-            shippingCost: number;
-            discount: number;
-            total: number;
-            status: string;
-            createdAt: string;
-            estimatedDelivery: string;
-        }[];
     }>;
     findByIdOrNumber(idOrNumber: string): Promise<{
         id: string;

@@ -42,11 +42,26 @@ var __metadata = (this && this.__metadata) || function (k, v) {
     if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.AuthService = void 0;
+exports.AuthService = exports.DEFAULT_ROLE_PERMISSIONS = void 0;
+exports.resolveUserPermissions = resolveUserPermissions;
 const common_1 = require("@nestjs/common");
 const jwt_1 = require("@nestjs/jwt");
 const prisma_service_1 = require("../prisma/prisma.service");
 const bcrypt = __importStar(require("bcrypt"));
+exports.DEFAULT_ROLE_PERMISSIONS = {
+    ADMIN: ['overview', 'products', 'categories', 'orders', 'custom_chairs', 'customers', 'expenses', 'shipping', 'staff'],
+    MANAGER: ['overview', 'products', 'categories', 'orders', 'custom_chairs', 'customers', 'shipping'],
+    SUPPORT: ['overview', 'orders', 'custom_chairs'],
+};
+function resolveUserPermissions(role, customPermissions) {
+    if (role === 'ADMIN') {
+        return exports.DEFAULT_ROLE_PERMISSIONS.ADMIN;
+    }
+    if (customPermissions && customPermissions.length > 0) {
+        return customPermissions;
+    }
+    return exports.DEFAULT_ROLE_PERMISSIONS[role] || exports.DEFAULT_ROLE_PERMISSIONS.SUPPORT;
+}
 let AuthService = class AuthService {
     prisma;
     jwtService;
@@ -64,7 +79,14 @@ let AuthService = class AuthService {
                 if (user && user.is_active) {
                     const isPasswordValid = await bcrypt.compare(password, user.password_hash);
                     if (isPasswordValid) {
-                        const payload = { sub: user.id, email: user.email, role: user.role, name: user.full_name };
+                        const userPermissions = resolveUserPermissions(user.role, user.permissions);
+                        const payload = {
+                            sub: user.id,
+                            email: user.email,
+                            role: user.role,
+                            name: user.full_name,
+                            permissions: userPermissions,
+                        };
                         const accessToken = this.jwtService.sign(payload);
                         return {
                             accessToken,
@@ -73,6 +95,7 @@ let AuthService = class AuthService {
                                 email: user.email,
                                 name: user.full_name,
                                 role: user.role,
+                                permissions: userPermissions,
                             },
                         };
                     }
@@ -88,6 +111,7 @@ let AuthService = class AuthService {
                 email: 'admin@zahra-store.com',
                 role: 'ADMIN',
                 name: 'مدير متجر زهرة',
+                permissions: exports.DEFAULT_ROLE_PERMISSIONS.ADMIN,
             };
             const accessToken = this.jwtService.sign(payload);
             return {
@@ -97,6 +121,7 @@ let AuthService = class AuthService {
                     email: 'admin@zahra-store.com',
                     name: 'مدير متجر زهرة',
                     role: 'ADMIN',
+                    permissions: exports.DEFAULT_ROLE_PERMISSIONS.ADMIN,
                 },
             };
         }
@@ -113,15 +138,24 @@ let AuthService = class AuthService {
             throw new common_1.ConflictException('هذا البريد الإلكتروني مسجل مسبقاً');
         }
         const passwordHash = await bcrypt.hash(registerDto.password, 10);
+        const userRole = registerDto.role || 'ADMIN';
+        const userPermissions = resolveUserPermissions(userRole);
         const user = await this.prisma.adminUser.create({
             data: {
                 email: registerDto.email,
                 password_hash: passwordHash,
                 full_name: registerDto.full_name,
-                role: registerDto.role || 'ADMIN',
+                role: userRole,
+                permissions: userPermissions,
             },
         });
-        const payload = { sub: user.id, email: user.email, role: user.role, name: user.full_name };
+        const payload = {
+            sub: user.id,
+            email: user.email,
+            role: user.role,
+            name: user.full_name,
+            permissions: userPermissions,
+        };
         const accessToken = this.jwtService.sign(payload);
         return {
             accessToken,
@@ -130,6 +164,7 @@ let AuthService = class AuthService {
                 email: user.email,
                 name: user.full_name,
                 role: user.role,
+                permissions: userPermissions,
             },
         };
     }
@@ -144,6 +179,7 @@ let AuthService = class AuthService {
                     email: user.email,
                     name: user.full_name,
                     role: user.role,
+                    permissions: resolveUserPermissions(user.role, user.permissions),
                 };
             }
         }
@@ -152,6 +188,7 @@ let AuthService = class AuthService {
             email: 'admin@zahra-store.com',
             name: 'مدير متجر زهرة',
             role: 'ADMIN',
+            permissions: exports.DEFAULT_ROLE_PERMISSIONS.ADMIN,
         };
     }
 };

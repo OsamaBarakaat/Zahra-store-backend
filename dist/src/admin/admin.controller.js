@@ -43,6 +43,7 @@ let AdminController = class AdminController {
 exports.AdminController = AdminController;
 __decorate([
     (0, common_1.Get)('overview'),
+    (0, roles_decorator_1.Roles)('ADMIN', 'MANAGER', 'SUPPORT', 'CUSTOM'),
     (0, swagger_1.ApiOperation)({ summary: 'إحصائيات الإيرادات والمصروفات وصافي الأرباح والأعداد' }),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", []),
@@ -57,7 +58,7 @@ __decorate([
 ], AdminController.prototype, "getStaffUsers", null);
 __decorate([
     (0, common_1.Post)('users'),
-    (0, swagger_1.ApiOperation)({ summary: 'إضافة مشرف جديد وتحديد دوره (ADMIN, MANAGER, SUPPORT)' }),
+    (0, swagger_1.ApiOperation)({ summary: 'إضافة مشرف جديد وتحديد دوره (ADMIN, MANAGER, SUPPORT, CUSTOM) وصلاحياته' }),
     __param(0, (0, common_1.Body)()),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [Object]),
@@ -65,7 +66,7 @@ __decorate([
 ], AdminController.prototype, "createStaffUser", null);
 __decorate([
     (0, common_1.Put)('users/:id'),
-    (0, swagger_1.ApiOperation)({ summary: 'تعديل دور المشرف أو حالة التفعيل' }),
+    (0, swagger_1.ApiOperation)({ summary: 'تعديل دور المشرف أو صلاحياته أو حالة التفعيل' }),
     __param(0, (0, common_1.Param)('id')),
     __param(1, (0, common_1.Body)()),
     __metadata("design:type", Function),

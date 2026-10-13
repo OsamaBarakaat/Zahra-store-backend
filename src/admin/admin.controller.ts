@@ -23,6 +23,7 @@ export class AdminController {
   constructor(private readonly adminService: AdminService) {}
 
   @Get('overview')
+  @Roles('ADMIN', 'MANAGER', 'SUPPORT', 'CUSTOM')
   @ApiOperation({ summary: 'إحصائيات الإيرادات والمصروفات وصافي الأرباح والأعداد' })
   getOverview() {
     return this.adminService.getOverview();
@@ -36,7 +37,7 @@ export class AdminController {
   }
 
   @Post('users')
-  @ApiOperation({ summary: 'إضافة مشرف جديد وتحديد دوره (ADMIN, MANAGER, SUPPORT)' })
+  @ApiOperation({ summary: 'إضافة مشرف جديد وتحديد دوره (ADMIN, MANAGER, SUPPORT, CUSTOM) وصلاحياته' })
   createStaffUser(
     @Body()
     dto: {
@@ -44,20 +45,23 @@ export class AdminController {
       password: string;
       full_name: string;
       role: string;
+      permissions?: string[];
     },
   ) {
     return this.adminService.createStaffUser(dto);
   }
 
   @Put('users/:id')
-  @ApiOperation({ summary: 'تعديل دور المشرف أو حالة التفعيل' })
+  @ApiOperation({ summary: 'تعديل دور المشرف أو صلاحياته أو حالة التفعيل' })
   updateStaffUser(
     @Param('id') id: string,
     @Body()
     dto: {
       full_name?: string;
       role?: string;
+      permissions?: string[];
       is_active?: boolean;
+      password?: string;
     },
   ) {
     return this.adminService.updateStaffUser(id, dto);

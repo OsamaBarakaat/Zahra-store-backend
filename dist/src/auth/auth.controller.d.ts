@@ -11,6 +11,7 @@ export declare class AuthController {
             email: string;
             name: string;
             role: string;
+            permissions: string[];
         };
     }>;
     register(registerDto: RegisterDto): Promise<{
@@ -20,6 +21,7 @@ export declare class AuthController {
             email: string;
             name: string;
             role: string;
+            permissions: string[];
         };
     }>;
     getProfile(user: any): Promise<{
@@ -27,5 +29,6 @@ export declare class AuthController {
         email: string;
         name: string;
         role: string;
+        permissions: string[];
     }>;
 }

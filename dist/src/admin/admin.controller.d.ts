@@ -9,7 +9,9 @@ export declare class AdminController {
         totalOrders: number;
         pendingOrders: number;
         totalProducts: number;
+        totalCategories: number;
         totalClients: number;
+        totalStaff: number;
         customRequestsCount: number;
         lowStockCount: number;
         lowStockProducts: {
@@ -88,6 +90,7 @@ export declare class AdminController {
         full_name: string;
         role: string;
         id: string;
+        permissions: string[];
         is_active: boolean;
         created_at: Date;
     }[]>;
@@ -96,14 +99,17 @@ export declare class AdminController {
         password: string;
         full_name: string;
         role: string;
+        permissions?: string[];
     }): Promise<{
         id: string;
         email: string;
         full_name: string;
         role: string;
+        permissions: string[];
         is_active: boolean;
         created_at: Date;
     } | {
+        permissions: string[];
         is_active: boolean;
         email: string;
         password: string;
@@ -115,12 +121,15 @@ export declare class AdminController {
     updateStaffUser(id: string, dto: {
         full_name?: string;
         role?: string;
+        permissions?: string[];
         is_active?: boolean;
+        password?: string;
     }): Promise<{
         email: string;
         full_name: string;
         role: string;
         id: string;
+        permissions: string[];
         is_active: boolean;
     }>;
     deleteStaffUser(id: string): Promise<{
@@ -129,6 +138,7 @@ export declare class AdminController {
         role: string;
         id: string;
         password_hash: string;
+        permissions: string[];
         is_active: boolean;
         created_at: Date;
         updated_at: Date;

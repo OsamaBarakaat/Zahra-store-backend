@@ -77,10 +77,6 @@ let AppController = class AppController {
         res.setHeader('Content-Type', 'text/html; charset=utf-8');
         return res.send(getAdminHtml());
     }
-    getAdmin(res) {
-        res.setHeader('Content-Type', 'text/html; charset=utf-8');
-        return res.send(getAdminHtml());
-    }
     getIndexHtml(res) {
         res.setHeader('Content-Type', 'text/html; charset=utf-8');
         return res.send(getAdminHtml());
@@ -94,13 +90,6 @@ __decorate([
     __metadata("design:paramtypes", [Object]),
     __metadata("design:returntype", void 0)
 ], AppController.prototype, "getRoot", null);
-__decorate([
-    (0, common_1.Get)(['admin', 'admin/{*path}']),
-    __param(0, (0, common_1.Res)()),
-    __metadata("design:type", Function),
-    __metadata("design:paramtypes", [Object]),
-    __metadata("design:returntype", void 0)
-], AppController.prototype, "getAdmin", null);
 __decorate([
     (0, common_1.Get)('index.html'),
     __param(0, (0, common_1.Res)()),

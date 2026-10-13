@@ -19,6 +19,7 @@ import { StorageModule } from './storage/storage.module';
 import { AdminModule } from './admin/admin.module';
 import { CustomersModule } from './customers/customers.module';
 import { ExpensesModule } from './expenses/expenses.module';
+import { PermissionsModule } from './permissions/permissions.module';
 
 const uploadsPath = path.resolve(process.cwd(), 'uploads');
 const publicPath = path.resolve(process.cwd(), 'public');
@@ -51,6 +52,7 @@ const publicPath = path.resolve(process.cwd(), 'public');
     AdminModule,
     CustomersModule,
     ExpensesModule,
+    PermissionsModule,
   ],
   controllers: [AppController],
   providers: [AppService],

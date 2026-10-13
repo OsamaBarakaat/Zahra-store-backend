@@ -5,6 +5,22 @@ import { LoginDto } from './dto/login.dto';
 import { RegisterDto } from './dto/register.dto';
 import * as bcrypt from 'bcrypt';
 
+export const DEFAULT_ROLE_PERMISSIONS: Record<string, string[]> = {
+  ADMIN: ['overview', 'products', 'categories', 'orders', 'custom_chairs', 'customers', 'expenses', 'shipping', 'staff'],
+  MANAGER: ['overview', 'products', 'categories', 'orders', 'custom_chairs', 'customers', 'shipping'],
+  SUPPORT: ['overview', 'orders', 'custom_chairs'],
+};
+
+export function resolveUserPermissions(role: string, customPermissions?: string[]): string[] {
+  if (role === 'ADMIN') {
+    return DEFAULT_ROLE_PERMISSIONS.ADMIN;
+  }
+  if (customPermissions && customPermissions.length > 0) {
+    return customPermissions;
+  }
+  return DEFAULT_ROLE_PERMISSIONS[role] || DEFAULT_ROLE_PERMISSIONS.SUPPORT;
+}
+
 @Injectable()
 export class AuthService {
   constructor(
@@ -25,7 +41,14 @@ export class AuthService {
         if (user && user.is_active) {
           const isPasswordValid = await bcrypt.compare(password, user.password_hash);
           if (isPasswordValid) {
-            const payload = { sub: user.id, email: user.email, role: user.role, name: user.full_name };
+            const userPermissions = resolveUserPermissions(user.role, user.permissions);
+            const payload = {
+              sub: user.id,
+              email: user.email,
+              role: user.role,
+              name: user.full_name,
+              permissions: userPermissions,
+            };
             const accessToken = this.jwtService.sign(payload);
             return {
               accessToken,
@@ -34,6 +57,7 @@ export class AuthService {
                 email: user.email,
                 name: user.full_name,
                 role: user.role,
+                permissions: userPermissions,
               },
             };
           }
@@ -50,6 +74,7 @@ export class AuthService {
         email: 'admin@zahra-store.com',
         role: 'ADMIN',
         name: 'مدير متجر زهرة',
+        permissions: DEFAULT_ROLE_PERMISSIONS.ADMIN,
       };
       const accessToken = this.jwtService.sign(payload);
       return {
@@ -59,6 +84,7 @@ export class AuthService {
           email: 'admin@zahra-store.com',
           name: 'مدير متجر زهرة',
           role: 'ADMIN',
+          permissions: DEFAULT_ROLE_PERMISSIONS.ADMIN,
         },
       };
     }
@@ -80,16 +106,25 @@ export class AuthService {
     }
 
     const passwordHash = await bcrypt.hash(registerDto.password, 10);
+    const userRole = registerDto.role || 'ADMIN';
+    const userPermissions = resolveUserPermissions(userRole);
     const user = await this.prisma.adminUser.create({
       data: {
         email: registerDto.email,
         password_hash: passwordHash,
         full_name: registerDto.full_name,
-        role: registerDto.role || 'ADMIN',
+        role: userRole,
+        permissions: userPermissions,
       },
     });
 
-    const payload = { sub: user.id, email: user.email, role: user.role, name: user.full_name };
+    const payload = {
+      sub: user.id,
+      email: user.email,
+      role: user.role,
+      name: user.full_name,
+      permissions: userPermissions,
+    };
     const accessToken = this.jwtService.sign(payload);
 
     return {
@@ -99,6 +134,7 @@ export class AuthService {
         email: user.email,
         name: user.full_name,
         role: user.role,
+        permissions: userPermissions,
       },
     };
   }
@@ -114,6 +150,7 @@ export class AuthService {
           email: user.email,
           name: user.full_name,
           role: user.role,
+          permissions: resolveUserPermissions(user.role, user.permissions),
         };
       }
     }
@@ -123,6 +160,7 @@ export class AuthService {
       email: 'admin@zahra-store.com',
       name: 'مدير متجر زهرة',
       role: 'ADMIN',
+      permissions: DEFAULT_ROLE_PERMISSIONS.ADMIN,
     };
   }
 }

@@ -237,6 +237,8 @@ let OrdersService = class OrdersService {
         return newOrder;
     }
     async findAll(query = {}) {
+        const take = query.limit || 20;
+        const skip = ((query.page || 1) - 1) * take;
         if (this.prisma.isConnected) {
             try {
                 const where = {};
@@ -249,8 +251,6 @@ let OrdersService = class OrdersService {
                         { customer_phone: { contains: query.search } },
                     ];
                 }
-                const take = query.limit || 20;
-                const skip = ((query.page || 1) - 1) * take;
                 const [total, orders] = await Promise.all([
                     this.prisma.order.count({ where }),
                     this.prisma.order.findMany({
@@ -270,22 +270,19 @@ let OrdersService = class OrdersService {
             }
             catch (err) {
                 console.warn('Prisma error in findAll orders:', err.message);
+                return {
+                    total: 0,
+                    page: 1,
+                    limit: take,
+                    orders: [],
+                };
             }
         }
-        let list = [...MOCK_ORDERS];
-        if (query.status)
-            list = list.filter((o) => o.status === query.status);
-        if (query.search) {
-            const s = query.search.toLowerCase();
-            list = list.filter((o) => o.orderNumber.toLowerCase().includes(s) ||
-                `${o.customer.firstName} ${o.customer.lastName}`.includes(s) ||
-                o.customer.phone.includes(s));
-        }
         return {
-            total: list.length,
+            total: 0,
             page: 1,
-            limit: list.length,
-            orders: list,
+            limit: 20,
+            orders: [],
         };
     }
     async findByIdOrNumber(idOrNumber) {

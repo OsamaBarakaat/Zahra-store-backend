@@ -2,6 +2,12 @@ import { Injectable, CanActivate, ExecutionContext, ForbiddenException } from '@
 import { Reflector } from '@nestjs/core';
 import { ROLES_KEY } from '../decorators/roles.decorator';
 
+const DEFAULT_ROLE_PERMS: Record<string, string[]> = {
+  ADMIN: ['overview', 'products', 'categories', 'orders', 'custom_chairs', 'customers', 'expenses', 'shipping', 'staff'],
+  MANAGER: ['overview', 'products', 'categories', 'orders', 'custom_chairs', 'customers', 'shipping'],
+  SUPPORT: ['overview', 'orders', 'custom_chairs'],
+};
+
 @Injectable()
 export class RolesGuard implements CanActivate {
   constructor(private reflector: Reflector) {}
@@ -16,16 +22,40 @@ export class RolesGuard implements CanActivate {
       return true;
     }
 
-    const { user } = context.switchToHttp().getRequest();
+    const req = context.switchToHttp().getRequest();
+    const { user } = req;
     if (!user || !user.role) {
       throw new ForbiddenException('ليس لديك الصلاحيات الكافية للوصول إلى هذا الإجراء');
     }
 
-    const hasRole = requiredRoles.includes(user.role);
-    if (!hasRole) {
-      throw new ForbiddenException(`يتطلب هذا الإجراء صلاحيات: ${requiredRoles.join(', ')}`);
+    // ADMIN has full unrestricted access
+    if (user.role === 'ADMIN') {
+      return true;
     }
 
-    return true;
+    // Direct role match
+    if (requiredRoles.includes(user.role)) {
+      return true;
+    }
+
+    // Dynamic Permission check
+    const perms: string[] =
+      Array.isArray(user.permissions) && user.permissions.length > 0
+        ? user.permissions
+        : DEFAULT_ROLE_PERMS[user.role] || [];
+
+    const path: string = (req.route?.path || req.url || '').toLowerCase();
+    if (path.includes('order') && perms.includes('orders')) return true;
+    if (path.includes('chair') && perms.includes('custom_chairs')) return true;
+    if (path.includes('product') && perms.includes('products')) return true;
+    if (path.includes('categor') && perms.includes('categories')) return true;
+    if (path.includes('customer') && perms.includes('customers')) return true;
+    if (path.includes('expense') && perms.includes('expenses')) return true;
+    if (path.includes('shipping') && perms.includes('shipping')) return true;
+    if (path.includes('admin/users') && perms.includes('staff')) return true;
+    if (path.includes('admin/overview') && perms.includes('overview')) return true;
+
+    throw new ForbiddenException(`يتطلب هذا الإجراء صلاحيات: ${requiredRoles.join(', ')}`);
   }
 }
+

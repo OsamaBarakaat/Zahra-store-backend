@@ -221,10 +221,25 @@ model AdminUser {
   email         String   @unique
   password_hash String
   full_name     String
-  role          String   @default("ADMIN") // ADMIN, MANAGER, SUPPORT
+  role          String   @default("ADMIN") // ADMIN, MANAGER, SUPPORT, CUSTOM
+  permissions   String[] @default([])
   is_active     Boolean  @default(true)
   created_at    DateTime @default(now())
   updated_at    DateTime @updatedAt
 
   @@map("admin_users")
 }
+
+model Permission {
+  id          String   @id @default(uuid())
+  key         String   @unique
+  name_ar     String
+  description String?
+  module      String   @default("general")
+  icon        String?  @default("fa-shield-halved")
+  created_at  DateTime @default(now())
+  updated_at  DateTime @updatedAt
+
+  @@map("permissions")
+}
+

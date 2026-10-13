@@ -6,6 +6,7 @@ import { AppModule } from './app.module';
 import express, { Express, Request, Response } from 'express';
 import * as fs from 'fs';
 import * as path from 'path';
+import { EMBEDDED_ADMIN_HTML } from './admin-html';
 
 const server: Express = express();
 let isAppInitialized = false;
@@ -42,9 +43,15 @@ export async function bootstrapApp(): Promise<Express> {
       }),
     );
 
-    // Global API Prefix
+    // Serve HTML dashboard directly on Express for non-api routes
+    server.get(['/', '/admin', '/admin/{*path}', '/index.html'], (req, res) => {
+      res.setHeader('Content-Type', 'text/html; charset=utf-8');
+      return res.send(EMBEDDED_ADMIN_HTML);
+    });
+
+    // Global API Prefix for all REST controllers
     app.setGlobalPrefix('api', {
-      exclude: ['admin', 'admin/(.*)', 'uploads/(.*)', '', 'index.html'],
+      exclude: ['uploads/(.*)'],
     });
 
     // Swagger OpenAPI Documentation

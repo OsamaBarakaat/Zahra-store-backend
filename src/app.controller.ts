@@ -39,12 +39,6 @@ export class AppController {
     return res.send(getAdminHtml());
   }
 
-  @Get(['admin', 'admin/{*path}'])
-  getAdmin(@Res() res: Response) {
-    res.setHeader('Content-Type', 'text/html; charset=utf-8');
-    return res.send(getAdminHtml());
-  }
-
   @Get('index.html')
   getIndexHtml(@Res() res: Response) {
     res.setHeader('Content-Type', 'text/html; charset=utf-8');
