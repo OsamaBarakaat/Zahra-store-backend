@@ -1,6 +1,6 @@
-import { AppService } from './app.service';
+import type { Response } from 'express';
 export declare class AppController {
-    private readonly appService;
-    constructor(appService: AppService);
-    getHello(): string;
+    getRoot(res: Response): Response<any, Record<string, any>>;
+    getAdmin(res: Response): Response<any, Record<string, any>>;
+    getIndexHtml(res: Response): Response<any, Record<string, any>>;
 }

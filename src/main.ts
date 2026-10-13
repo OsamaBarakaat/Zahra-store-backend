@@ -44,7 +44,7 @@ export async function bootstrapApp(): Promise<Express> {
 
     // Global API Prefix
     app.setGlobalPrefix('api', {
-      exclude: ['admin', 'uploads'],
+      exclude: ['admin', 'admin/(.*)', 'uploads/(.*)', '', 'index.html'],
     });
 
     // Swagger OpenAPI Documentation
@@ -71,6 +71,13 @@ export async function bootstrapApp(): Promise<Express> {
     const document = SwaggerModule.createDocument(app, config);
     SwaggerModule.setup('api/docs', app, document, {
       customSiteTitle: 'توثيق واجهات متجر زهرة | Zahra Store API Docs',
+      customJs: [
+        'https://cdnjs.cloudflare.com/ajax/libs/swagger-ui/5.11.0/swagger-ui-bundle.min.js',
+        'https://cdnjs.cloudflare.com/ajax/libs/swagger-ui/5.11.0/swagger-ui-standalone-preset.min.js',
+      ],
+      customCssUrl: [
+        'https://cdnjs.cloudflare.com/ajax/libs/swagger-ui/5.11.0/swagger-ui.min.css',
+      ],
       customCss: `
         .swagger-ui .topbar { background-color: #be185d; }
         .swagger-ui .info .title { color: #831843; font-family: Cairo, Tahoma, sans-serif; }
