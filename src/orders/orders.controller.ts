@@ -38,7 +38,7 @@ export class OrdersController {
 
   @Get()
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles('ADMIN')
+  @Roles('ADMIN', 'MANAGER', 'SUPPORT', 'CUSTOM')
   @ApiBearerAuth('JWT')
   @ApiOperation({ summary: 'عرض وتصفية جميع طلبات المتجر للوحة التحكم (Admin)' })
   findAll(@Query() query: QueryOrdersDto) {
@@ -46,6 +46,9 @@ export class OrdersController {
   }
 
   @Get(':id')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles('ADMIN', 'MANAGER', 'SUPPORT', 'CUSTOM')
+  @ApiBearerAuth('JWT')
   @ApiOperation({ summary: 'عرض تفاصيل طلب محدد بالمعرف أو برقم الطلب' })
   findByIdOrNumber(@Param('id') id: string) {
     return this.ordersService.findByIdOrNumber(id);

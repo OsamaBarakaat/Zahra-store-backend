@@ -35,6 +35,7 @@ let ShippingController = class ShippingController {
 exports.ShippingController = ShippingController;
 __decorate([
     (0, common_1.Get)('zones'),
+    (0, roles_decorator_1.Roles)('ADMIN', 'MANAGER', 'SUPPORT', 'CUSTOM'),
     (0, swagger_1.ApiOperation)({ summary: 'عرض قائمة محافظات مصر وأسعار الشحن والمدة التقديرية' }),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", []),
@@ -42,9 +43,7 @@ __decorate([
 ], ShippingController.prototype, "findAllZones", null);
 __decorate([
     (0, common_1.Put)('zones/:id'),
-    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard, roles_guard_1.RolesGuard),
     (0, roles_decorator_1.Roles)('ADMIN'),
-    (0, swagger_1.ApiBearerAuth)('JWT'),
     (0, swagger_1.ApiOperation)({ summary: 'تعديل سعر الشحن أو مدة التوصيل أو حالة التفعيل للمحافظة (Admin)' }),
     __param(0, (0, common_1.Param)('id')),
     __param(1, (0, common_1.Body)()),
@@ -55,6 +54,8 @@ __decorate([
 exports.ShippingController = ShippingController = __decorate([
     (0, swagger_1.ApiTags)('Shipping (مناطق الشحن والمحافظات)'),
     (0, common_1.Controller)('shipping'),
+    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard, roles_guard_1.RolesGuard),
+    (0, swagger_1.ApiBearerAuth)('JWT'),
     __metadata("design:paramtypes", [shipping_service_1.ShippingService])
 ], ShippingController);
 //# sourceMappingURL=shipping.controller.js.map

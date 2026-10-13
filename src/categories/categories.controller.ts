@@ -19,10 +19,13 @@ import { Roles } from '../auth/decorators/roles.decorator';
 
 @ApiTags('Categories (الأقسام والتصنيفات)')
 @Controller('categories')
+@UseGuards(JwtAuthGuard, RolesGuard)
+@ApiBearerAuth('JWT')
 export class CategoriesController {
   constructor(private readonly categoriesService: CategoriesService) {}
 
   @Get()
+  @Roles('ADMIN', 'MANAGER', 'SUPPORT', 'CUSTOM')
   @ApiOperation({ summary: 'عرض جميع الأقسام النشطة' })
   @ApiQuery({ name: 'activeOnly', required: false, type: Boolean })
   findAll(@Query('activeOnly') activeOnly?: string) {
@@ -30,12 +33,14 @@ export class CategoriesController {
   }
 
   @Get(':slug')
+  @Roles('ADMIN', 'MANAGER', 'SUPPORT', 'CUSTOM')
   @ApiOperation({ summary: 'عرض تفاصيل قسم محدد عبر الـ slug' })
   findBySlug(@Param('slug') slug: string) {
     return this.categoriesService.findBySlug(slug);
   }
 
   @Get(':slug/products')
+  @Roles('ADMIN', 'MANAGER', 'SUPPORT', 'CUSTOM')
   @ApiOperation({ summary: 'عرض منتجات قسم محدد' })
   findCategoryProducts(@Param('slug') slug: string) {
     return this.categoriesService.findProducts(slug);

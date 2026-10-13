@@ -66,7 +66,7 @@ __decorate([
 __decorate([
     (0, common_1.Get)(),
     (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard, roles_guard_1.RolesGuard),
-    (0, roles_decorator_1.Roles)('ADMIN'),
+    (0, roles_decorator_1.Roles)('ADMIN', 'MANAGER', 'SUPPORT', 'CUSTOM'),
     (0, swagger_1.ApiBearerAuth)('JWT'),
     (0, swagger_1.ApiOperation)({ summary: 'عرض جميع طلبات تلبيسات الكراسي للوحة التحكم (Admin)' }),
     __param(0, (0, common_1.Query)()),
@@ -77,7 +77,7 @@ __decorate([
 __decorate([
     (0, common_1.Get)(':id'),
     (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard, roles_guard_1.RolesGuard),
-    (0, roles_decorator_1.Roles)('ADMIN'),
+    (0, roles_decorator_1.Roles)('ADMIN', 'MANAGER', 'SUPPORT', 'CUSTOM'),
     (0, swagger_1.ApiBearerAuth)('JWT'),
     (0, swagger_1.ApiOperation)({ summary: 'عرض تفاصيل طلب تلبيسة محدد (Admin)' }),
     __param(0, (0, common_1.Param)('id')),

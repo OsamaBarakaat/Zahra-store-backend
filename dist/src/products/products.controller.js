@@ -55,6 +55,7 @@ let ProductsController = class ProductsController {
 exports.ProductsController = ProductsController;
 __decorate([
     (0, common_1.Get)(),
+    (0, roles_decorator_1.Roles)('ADMIN', 'MANAGER', 'SUPPORT', 'CUSTOM'),
     (0, swagger_1.ApiOperation)({ summary: 'تصفح جميع المنتجات مع الفلترة والترتيب والبحث' }),
     __param(0, (0, common_1.Query)()),
     __metadata("design:type", Function),
@@ -63,6 +64,7 @@ __decorate([
 ], ProductsController.prototype, "findAll", null);
 __decorate([
     (0, common_1.Get)('featured'),
+    (0, roles_decorator_1.Roles)('ADMIN', 'MANAGER', 'SUPPORT', 'CUSTOM'),
     (0, swagger_1.ApiOperation)({ summary: 'عرض المنتجات المميزة' }),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", []),
@@ -70,6 +72,7 @@ __decorate([
 ], ProductsController.prototype, "getFeatured", null);
 __decorate([
     (0, common_1.Get)('sale'),
+    (0, roles_decorator_1.Roles)('ADMIN', 'MANAGER', 'SUPPORT', 'CUSTOM'),
     (0, swagger_1.ApiOperation)({ summary: 'عرض المنتجات ذات الخصومات والعروض' }),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", []),
@@ -77,6 +80,7 @@ __decorate([
 ], ProductsController.prototype, "getSale", null);
 __decorate([
     (0, common_1.Get)(':slug'),
+    (0, roles_decorator_1.Roles)('ADMIN', 'MANAGER', 'SUPPORT', 'CUSTOM'),
     (0, swagger_1.ApiOperation)({ summary: 'عرض تفاصيل منتج عبر الـ Slug' }),
     __param(0, (0, common_1.Param)('slug')),
     __metadata("design:type", Function),
@@ -132,6 +136,8 @@ __decorate([
 exports.ProductsController = ProductsController = __decorate([
     (0, swagger_1.ApiTags)('Products (المنتجات)'),
     (0, common_1.Controller)('products'),
+    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard, roles_guard_1.RolesGuard),
+    (0, swagger_1.ApiBearerAuth)('JWT'),
     __metadata("design:paramtypes", [products_service_1.ProductsService])
 ], ProductsController);
 //# sourceMappingURL=products.controller.js.map

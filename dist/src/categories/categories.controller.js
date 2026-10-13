@@ -48,6 +48,7 @@ let CategoriesController = class CategoriesController {
 exports.CategoriesController = CategoriesController;
 __decorate([
     (0, common_1.Get)(),
+    (0, roles_decorator_1.Roles)('ADMIN', 'MANAGER', 'SUPPORT', 'CUSTOM'),
     (0, swagger_1.ApiOperation)({ summary: 'عرض جميع الأقسام النشطة' }),
     (0, swagger_1.ApiQuery)({ name: 'activeOnly', required: false, type: Boolean }),
     __param(0, (0, common_1.Query)('activeOnly')),
@@ -57,6 +58,7 @@ __decorate([
 ], CategoriesController.prototype, "findAll", null);
 __decorate([
     (0, common_1.Get)(':slug'),
+    (0, roles_decorator_1.Roles)('ADMIN', 'MANAGER', 'SUPPORT', 'CUSTOM'),
     (0, swagger_1.ApiOperation)({ summary: 'عرض تفاصيل قسم محدد عبر الـ slug' }),
     __param(0, (0, common_1.Param)('slug')),
     __metadata("design:type", Function),
@@ -65,6 +67,7 @@ __decorate([
 ], CategoriesController.prototype, "findBySlug", null);
 __decorate([
     (0, common_1.Get)(':slug/products'),
+    (0, roles_decorator_1.Roles)('ADMIN', 'MANAGER', 'SUPPORT', 'CUSTOM'),
     (0, swagger_1.ApiOperation)({ summary: 'عرض منتجات قسم محدد' }),
     __param(0, (0, common_1.Param)('slug')),
     __metadata("design:type", Function),
@@ -108,6 +111,8 @@ __decorate([
 exports.CategoriesController = CategoriesController = __decorate([
     (0, swagger_1.ApiTags)('Categories (الأقسام والتصنيفات)'),
     (0, common_1.Controller)('categories'),
+    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard, roles_guard_1.RolesGuard),
+    (0, swagger_1.ApiBearerAuth)('JWT'),
     __metadata("design:paramtypes", [categories_service_1.CategoriesService])
 ], CategoriesController);
 //# sourceMappingURL=categories.controller.js.map

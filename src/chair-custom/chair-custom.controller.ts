@@ -41,7 +41,7 @@ export class ChairCustomController {
 
   @Get()
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles('ADMIN')
+  @Roles('ADMIN', 'MANAGER', 'SUPPORT', 'CUSTOM')
   @ApiBearerAuth('JWT')
   @ApiOperation({ summary: 'عرض جميع طلبات تلبيسات الكراسي للوحة التحكم (Admin)' })
   findAll(@Query() query: QueryChairCustomDto) {
@@ -50,7 +50,7 @@ export class ChairCustomController {
 
   @Get(':id')
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles('ADMIN')
+  @Roles('ADMIN', 'MANAGER', 'SUPPORT', 'CUSTOM')
   @ApiBearerAuth('JWT')
   @ApiOperation({ summary: 'عرض تفاصيل طلب تلبيسة محدد (Admin)' })
   findOne(@Param('id') id: string) {
