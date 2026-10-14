@@ -129,7 +129,19 @@ if (!process.env.VERCEL) {
     startStandalone();
 }
 async function handler(req, res) {
-    const expressInstance = await bootstrapApp();
-    return expressInstance(req, res);
+    try {
+        const expressInstance = await bootstrapApp();
+        return expressInstance(req, res);
+    }
+    catch (err) {
+        common_1.Logger.error('Vercel Handler Bootstrap Error:', err);
+        if (!res.headersSent) {
+            res.status(500).json({
+                error: 'Bootstrap Error',
+                message: err?.message || String(err),
+                stack: err?.stack || undefined,
+            });
+        }
+    }
 }
 //# sourceMappingURL=main.js.map

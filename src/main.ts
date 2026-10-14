@@ -114,6 +114,17 @@ if (!process.env.VERCEL) {
 
 // Export default serverless handler for Vercel
 export default async function handler(req: Request, res: Response) {
-  const expressInstance = await bootstrapApp();
-  return expressInstance(req, res);
+  try {
+    const expressInstance = await bootstrapApp();
+    return expressInstance(req, res);
+  } catch (err: any) {
+    Logger.error('Vercel Handler Bootstrap Error:', err);
+    if (!res.headersSent) {
+      res.status(500).json({
+        error: 'Bootstrap Error',
+        message: err?.message || String(err),
+        stack: err?.stack || undefined,
+      });
+    }
+  }
 }
