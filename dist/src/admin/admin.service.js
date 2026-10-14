@@ -45,10 +45,10 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.AdminService = void 0;
 const common_1 = require("@nestjs/common");
 const prisma_service_1 = require("../prisma/prisma.service");
-const bcrypt = __importStar(require("bcrypt"));
+const bcrypt = __importStar(require("bcryptjs"));
 const ROLE_DEFAULT_PERMISSIONS = {
-    ADMIN: ['overview', 'products', 'categories', 'orders', 'custom_chairs', 'customers', 'expenses', 'shipping', 'staff'],
-    MANAGER: ['overview', 'products', 'categories', 'orders', 'custom_chairs', 'customers', 'shipping'],
+    ADMIN: ['overview', 'products', 'categories', 'orders', 'custom_chairs', 'customers', 'expenses', 'shipping', 'coupons', 'staff'],
+    MANAGER: ['overview', 'products', 'categories', 'orders', 'custom_chairs', 'customers', 'shipping', 'coupons'],
     SUPPORT: ['overview', 'orders', 'custom_chairs'],
 };
 let AdminService = class AdminService {

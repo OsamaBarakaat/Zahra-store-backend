@@ -1,10 +1,10 @@
 import { Injectable, ConflictException, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
-import * as bcrypt from 'bcrypt';
+import * as bcrypt from 'bcryptjs';
 
 const ROLE_DEFAULT_PERMISSIONS: Record<string, string[]> = {
-  ADMIN: ['overview', 'products', 'categories', 'orders', 'custom_chairs', 'customers', 'expenses', 'shipping', 'staff'],
-  MANAGER: ['overview', 'products', 'categories', 'orders', 'custom_chairs', 'customers', 'shipping'],
+  ADMIN: ['overview', 'products', 'categories', 'orders', 'custom_chairs', 'customers', 'expenses', 'shipping', 'coupons', 'staff'],
+  MANAGER: ['overview', 'products', 'categories', 'orders', 'custom_chairs', 'customers', 'shipping', 'coupons'],
   SUPPORT: ['overview', 'orders', 'custom_chairs'],
 };
 

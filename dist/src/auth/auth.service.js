@@ -47,10 +47,10 @@ exports.resolveUserPermissions = resolveUserPermissions;
 const common_1 = require("@nestjs/common");
 const jwt_1 = require("@nestjs/jwt");
 const prisma_service_1 = require("../prisma/prisma.service");
-const bcrypt = __importStar(require("bcrypt"));
+const bcrypt = __importStar(require("bcryptjs"));
 exports.DEFAULT_ROLE_PERMISSIONS = {
-    ADMIN: ['overview', 'products', 'categories', 'orders', 'custom_chairs', 'customers', 'expenses', 'shipping', 'staff'],
-    MANAGER: ['overview', 'products', 'categories', 'orders', 'custom_chairs', 'customers', 'shipping'],
+    ADMIN: ['overview', 'products', 'categories', 'orders', 'custom_chairs', 'customers', 'expenses', 'shipping', 'coupons', 'staff'],
+    MANAGER: ['overview', 'products', 'categories', 'orders', 'custom_chairs', 'customers', 'shipping', 'coupons'],
     SUPPORT: ['overview', 'orders', 'custom_chairs'],
 };
 function resolveUserPermissions(role, customPermissions) {
