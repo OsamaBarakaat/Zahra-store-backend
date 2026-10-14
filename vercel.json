@@ -5,5 +5,12 @@
       "source": "/(.*)",
       "destination": "/api/index"
     }
-  ]
+  ],
+  "functions": {
+    "api/index.ts": {
+      "includeFiles": "dist/**",
+      "memory": 1024,
+      "maxDuration": 30
+    }
+  }
 }

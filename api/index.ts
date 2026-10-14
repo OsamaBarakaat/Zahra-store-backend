@@ -1,15 +1,25 @@
 import { Request, Response } from 'express';
 
+let cachedHandler: any;
+
 export default async function (req: Request, res: Response) {
-  try {
-    const mainModule = require('../src/main');
-    const handler = mainModule.default || mainModule;
-    return await handler(req, res);
-  } catch (err: any) {
-    return res.status(500).json({
-      error: 'Serverless Function Load Error',
-      message: err?.message || String(err),
-      stack: err?.stack || undefined,
-    });
+  if (!cachedHandler) {
+    try {
+      const mainModule = require('../dist/src/main.js');
+      cachedHandler = mainModule.default || mainModule;
+    } catch (err: any) {
+      try {
+        const mainModule = require('../dist/src/main');
+        cachedHandler = mainModule.default || mainModule;
+      } catch (err2: any) {
+        return res.status(500).json({
+          error: 'Failed to load compiled NestJS handler from dist',
+          message: err?.message,
+          message2: err2?.message,
+          stack: err?.stack,
+        });
+      }
+    }
   }
+  return cachedHandler(req, res);
 }
