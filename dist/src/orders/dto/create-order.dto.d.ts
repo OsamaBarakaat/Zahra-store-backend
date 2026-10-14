@@ -1,7 +1,7 @@
 export declare class CustomerInfoDto {
     firstName: string;
-    lastName: string;
-    phone: string;
+    lastName?: string;
+    phone?: string;
     email?: string;
 }
 export declare class ShippingAddressDto {

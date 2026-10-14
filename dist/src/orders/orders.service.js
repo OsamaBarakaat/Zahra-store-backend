@@ -122,11 +122,13 @@ let OrdersService = class OrdersService {
         };
     }
     async createOrder(dto) {
-        const cleanPhone = (dto.customer.phone || '').replace(/[\s-]/g, '');
-        const egPhoneRegex = /^(010|011|012|015)[0-9]{8}$/;
-        if (!egPhoneRegex.test(cleanPhone)) {
-            throw new common_1.BadRequestException('رقم الهاتف غير صالح. يرجى إدخال رقم محمول مصري صحيح مكون من 11 رقماً (مثال: 01012345678)');
+        let rawPhone = (dto.customer.phone || '').trim();
+        if (rawPhone) {
+            rawPhone = rawPhone.replace(/[٠-٩]/g, (d) => '٠١٢٣٤٥٦٧٨٩'.indexOf(d).toString());
+            rawPhone = rawPhone.replace(/[\s\-\(\)\.]/g, '');
+            rawPhone = rawPhone.replace(/^(\+20|0020|20)/, '0');
         }
+        const cleanPhone = rawPhone || (dto.customer.email ? `email:${dto.customer.email}` : 'غير مسجل');
         const zoneInfo = await this.shippingService.getFeeForGovernorate(dto.address.governorate);
         const baseShippingCost = dto.shippingCost || zoneInfo.fee;
         const isElectronicPayment = dto.paymentMethod === 'instapay' || dto.paymentMethod === 'vodafone_cash';

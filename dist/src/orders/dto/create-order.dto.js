@@ -27,15 +27,15 @@ __decorate([
     __metadata("design:type", String)
 ], CustomerInfoDto.prototype, "firstName", void 0);
 __decorate([
-    (0, swagger_1.ApiProperty)({ example: 'أحمد' }),
+    (0, swagger_1.ApiPropertyOptional)({ example: 'أحمد' }),
+    (0, class_validator_1.IsOptional)(),
     (0, class_validator_1.IsString)(),
-    (0, class_validator_1.IsNotEmpty)({ message: 'اسم العائلة مطلوب' }),
     __metadata("design:type", String)
 ], CustomerInfoDto.prototype, "lastName", void 0);
 __decorate([
-    (0, swagger_1.ApiProperty)({ example: '01012345678' }),
+    (0, swagger_1.ApiPropertyOptional)({ example: '01012345678' }),
+    (0, class_validator_1.IsOptional)(),
     (0, class_validator_1.IsString)(),
-    (0, class_validator_1.IsNotEmpty)({ message: 'رقم الهاتف مطلوب' }),
     __metadata("design:type", String)
 ], CustomerInfoDto.prototype, "phone", void 0);
 __decorate([

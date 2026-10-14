@@ -16,15 +16,15 @@ export class CustomerInfoDto {
   @IsNotEmpty({ message: 'الاسم الأول مطلوب' })
   firstName: string;
 
-  @ApiProperty({ example: 'أحمد' })
+  @ApiPropertyOptional({ example: 'أحمد' })
+  @IsOptional()
   @IsString()
-  @IsNotEmpty({ message: 'اسم العائلة مطلوب' })
-  lastName: string;
+  lastName?: string;
 
-  @ApiProperty({ example: '01012345678' })
+  @ApiPropertyOptional({ example: '01012345678' })
+  @IsOptional()
   @IsString()
-  @IsNotEmpty({ message: 'رقم الهاتف مطلوب' })
-  phone: string;
+  phone?: string;
 
   @ApiPropertyOptional({ example: 'sara@example.com' })
   @IsOptional()
