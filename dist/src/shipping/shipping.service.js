@@ -117,6 +117,25 @@ let ShippingService = class ShippingService {
         }
         throw new common_1.NotFoundException('منطقة الشحن غير موجودة');
     }
+    async updateAllZones(items) {
+        const results = [];
+        for (const item of items) {
+            if (!item.id)
+                continue;
+            try {
+                const res = await this.updateZone(item.id, {
+                    shipping_fee: item.shipping_fee,
+                    estimated_days: item.estimated_days,
+                    is_active: item.is_active,
+                });
+                results.push(res);
+            }
+            catch (err) {
+                console.warn(`Failed to update zone ${item.id}:`, err?.message);
+            }
+        }
+        return { success: true, count: results.length, zones: results };
+    }
 };
 exports.ShippingService = ShippingService;
 exports.ShippingService = ShippingService = __decorate([

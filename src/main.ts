@@ -43,11 +43,50 @@ export async function bootstrapApp(): Promise<Express> {
       }),
     );
 
-    // Serve HTML dashboard directly on Express for non-api routes
-    server.get(['/', '/admin', '/admin/{*path}', '/index.html'], (req, res) => {
+    // Serve HTML dashboard directly on Express for non-api routes with cache busting
+    const serveAdminHtml = (req: Request, res: Response) => {
       res.setHeader('Content-Type', 'text/html; charset=utf-8');
+      res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
+      res.setHeader('Pragma', 'no-cache');
+      res.setHeader('Expires', '0');
+
+      const localHtmlPath = path.resolve(process.cwd(), 'public/index.html');
+      if (fs.existsSync(localHtmlPath)) {
+        return res.sendFile(localHtmlPath);
+      }
       return res.send(EMBEDDED_ADMIN_HTML);
+    };
+
+    server.get('/', serveAdminHtml);
+    server.get('/admin', serveAdminHtml);
+    server.get('/index.html', serveAdminHtml);
+
+    // Serve favicon and logo directly to ensure tab icon and navbar display properly and prevent loops
+    server.get(['/favicon.ico', '/favicon.png'], (req, res) => {
+      const faviconPath = path.resolve(process.cwd(), 'public/favicon.png');
+      if (fs.existsSync(faviconPath)) {
+        res.setHeader('Content-Type', 'image/png');
+        res.setHeader('Cache-Control', 'public, max-age=86400');
+        return res.sendFile(faviconPath);
+      }
+      const TRANSPARENT_PNG = Buffer.from(
+        'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAA=',
+        'base64',
+      );
+      res.setHeader('Content-Type', 'image/png');
+      return res.send(TRANSPARENT_PNG);
     });
+
+    server.get('/zahra-logo.png', (req, res) => {
+      const logoPath = path.resolve(process.cwd(), 'public/zahra-logo.png');
+      if (fs.existsSync(logoPath)) {
+        res.setHeader('Content-Type', 'image/png');
+        res.setHeader('Cache-Control', 'public, max-age=86400');
+        return res.sendFile(logoPath);
+      }
+      return res.status(404).end();
+    });
+
 
     // Global API Prefix for all REST controllers
     app.setGlobalPrefix('api', {

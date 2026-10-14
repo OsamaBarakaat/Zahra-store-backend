@@ -74,9 +74,39 @@ async function bootstrapApp() {
             forbidNonWhitelisted: false,
             transformOptions: { enableImplicitConversion: true },
         }));
-        server.get(['/', '/admin', '/admin/{*path}', '/index.html'], (req, res) => {
+        const serveAdminHtml = (req, res) => {
             res.setHeader('Content-Type', 'text/html; charset=utf-8');
+            res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
+            res.setHeader('Pragma', 'no-cache');
+            res.setHeader('Expires', '0');
+            const localHtmlPath = path.resolve(process.cwd(), 'public/index.html');
+            if (fs.existsSync(localHtmlPath)) {
+                return res.sendFile(localHtmlPath);
+            }
             return res.send(admin_html_1.EMBEDDED_ADMIN_HTML);
+        };
+        server.get('/', serveAdminHtml);
+        server.get('/admin', serveAdminHtml);
+        server.get('/index.html', serveAdminHtml);
+        server.get(['/favicon.ico', '/favicon.png'], (req, res) => {
+            const faviconPath = path.resolve(process.cwd(), 'public/favicon.png');
+            if (fs.existsSync(faviconPath)) {
+                res.setHeader('Content-Type', 'image/png');
+                res.setHeader('Cache-Control', 'public, max-age=86400');
+                return res.sendFile(faviconPath);
+            }
+            const TRANSPARENT_PNG = Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAA=', 'base64');
+            res.setHeader('Content-Type', 'image/png');
+            return res.send(TRANSPARENT_PNG);
+        });
+        server.get('/zahra-logo.png', (req, res) => {
+            const logoPath = path.resolve(process.cwd(), 'public/zahra-logo.png');
+            if (fs.existsSync(logoPath)) {
+                res.setHeader('Content-Type', 'image/png');
+                res.setHeader('Cache-Control', 'public, max-age=86400');
+                return res.sendFile(logoPath);
+            }
+            return res.status(404).end();
         });
         app.setGlobalPrefix('api', {
             exclude: ['uploads/(.*)'],

@@ -22,4 +22,14 @@ export declare class ShippingService {
         estimated_days: string;
         is_active: boolean;
     }>;
+    updateAllZones(items: Array<{
+        id: string;
+        shipping_fee?: number;
+        estimated_days?: string;
+        is_active?: boolean;
+    }>): Promise<{
+        success: boolean;
+        count: number;
+        zones: any[];
+    }>;
 }

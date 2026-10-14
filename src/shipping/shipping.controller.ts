@@ -20,6 +20,13 @@ export class ShippingController {
     return this.shippingService.findAllZones();
   }
 
+  @Put('zones-bulk')
+  @Roles('ADMIN')
+  @ApiOperation({ summary: 'تعديل وحفظ جميع أسعار الشحن والمحافظات دفعة واحدة (Admin)' })
+  updateAllZones(@Body() items: Array<{ id: string; shipping_fee?: number; estimated_days?: string; is_active?: boolean }>) {
+    return this.shippingService.updateAllZones(items);
+  }
+
   @Put('zones/:id')
   @Roles('ADMIN')
   @ApiOperation({ summary: 'تعديل سعر الشحن أو مدة التوصيل أو حالة التفعيل للمحافظة (Admin)' })

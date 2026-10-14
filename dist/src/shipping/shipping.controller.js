@@ -28,6 +28,9 @@ let ShippingController = class ShippingController {
     findAllZones() {
         return this.shippingService.findAllZones();
     }
+    updateAllZones(items) {
+        return this.shippingService.updateAllZones(items);
+    }
     updateZone(id, updateDto) {
         return this.shippingService.updateZone(id, updateDto);
     }
@@ -41,6 +44,15 @@ __decorate([
     __metadata("design:paramtypes", []),
     __metadata("design:returntype", void 0)
 ], ShippingController.prototype, "findAllZones", null);
+__decorate([
+    (0, common_1.Put)('zones-bulk'),
+    (0, roles_decorator_1.Roles)('ADMIN'),
+    (0, swagger_1.ApiOperation)({ summary: 'تعديل وحفظ جميع أسعار الشحن والمحافظات دفعة واحدة (Admin)' }),
+    __param(0, (0, common_1.Body)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Array]),
+    __metadata("design:returntype", void 0)
+], ShippingController.prototype, "updateAllZones", null);
 __decorate([
     (0, common_1.Put)('zones/:id'),
     (0, roles_decorator_1.Roles)('ADMIN'),
