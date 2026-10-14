@@ -95,6 +95,8 @@ export declare class CategoriesService {
             id: string;
             url: string;
             alt: string;
+            is_primary: boolean;
+            sort_order: number;
         }[];
         category: string;
         categoryName: string;

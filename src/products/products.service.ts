@@ -151,6 +151,8 @@ export class ProductsService {
         id: img.id,
         url: img.image_url,
         alt: img.alt_text || p.name_ar,
+        is_primary: img.is_primary ?? false,
+        sort_order: img.sort_order ?? 0,
       })),
       category: p.category?.slug || '',
       categoryName: p.category?.name_ar || '',
@@ -224,7 +226,7 @@ export class ProductsService {
           where,
           include: {
             category: true,
-            images: { orderBy: { sort_order: 'asc' } },
+            images: { orderBy: [{ is_primary: 'desc' }, { sort_order: 'asc' }] },
             variants: true,
           },
           orderBy,
@@ -262,7 +264,7 @@ export class ProductsService {
           where: { slug },
           include: {
             category: true,
-            images: { orderBy: { sort_order: 'asc' } },
+            images: { orderBy: [{ is_primary: 'desc' }, { sort_order: 'asc' }] },
             variants: true,
           },
         });
@@ -342,7 +344,7 @@ export class ProductsService {
         },
         include: {
           category: true,
-          images: true,
+          images: { orderBy: [{ is_primary: 'desc' }, { sort_order: 'asc' }] },
           variants: true,
         },
       });
@@ -425,7 +427,7 @@ export class ProductsService {
         },
         include: {
           category: true,
-          images: true,
+          images: { orderBy: [{ is_primary: 'desc' }, { sort_order: 'asc' }] },
           variants: true,
         },
       });

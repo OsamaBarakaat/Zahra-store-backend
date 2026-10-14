@@ -236,7 +236,7 @@ export class CategoriesService {
           where: { category: { slug }, is_active: true },
           include: {
             category: true,
-            images: { orderBy: { sort_order: 'asc' } },
+            images: { orderBy: [{ is_primary: 'desc' }, { sort_order: 'asc' }] },
             variants: true,
           },
         });
@@ -250,7 +250,13 @@ export class CategoriesService {
             price: Number(p.base_price),
             originalPrice: p.original_price ? Number(p.original_price) : undefined,
             discount: p.discount_percent ?? undefined,
-            images: p.images.map((img) => ({ id: img.id, url: img.image_url, alt: img.alt_text || p.name_ar })),
+            images: p.images.map((img) => ({
+              id: img.id,
+              url: img.image_url,
+              alt: img.alt_text || p.name_ar,
+              is_primary: img.is_primary ?? false,
+              sort_order: img.sort_order ?? 0,
+            })),
             category: p.category.slug,
             categoryName: p.category.name_ar,
             variants: p.variants.map((v) => ({

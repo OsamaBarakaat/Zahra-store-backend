@@ -813,18 +813,71 @@
           <textarea id="prodDescription" rows="3" placeholder="اكتب مواصفات المنتج..." class="w-full bg-slate-50 border border-slate-200 rounded-xl p-2.5 focus:border-brand-500 focus:outline-none"></textarea>
         </div>
 
-        <!-- Supabase Storage Image Upload -->
-        <div class="bg-slate-50 p-4 rounded-xl border border-slate-200 space-y-2">
-          <label class="block font-bold text-slate-700">صورة المنتج (رفع مباشر إلى Supabase Storage)</label>
-          <div class="flex items-center gap-3">
-            <input type="file" id="prodImageFile" accept="image/*" class="text-xs file:ml-3 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-bold file:bg-brand-50 file:text-brand-700 hover:file:bg-brand-100 cursor-pointer" />
-            <button type="button" onclick="uploadProductImage()" class="px-3 py-1.5 bg-brand-700 text-white rounded-lg font-bold text-xs hover:bg-brand-800 transition-colors">
-              <i class="fa-solid fa-cloud-arrow-up ml-1"></i> رفع الصورة
-            </button>
+        <!-- Image Management: Primary + Secondary Gallery -->
+        <div class="space-y-4 pt-1">
+          <!-- 1. Primary Image (Cover) -->
+          <div class="bg-amber-50/50 p-4 rounded-xl border border-amber-200/80 space-y-2.5">
+            <div class="flex items-center justify-between">
+              <label class="font-bold text-amber-900 text-xs flex items-center gap-1.5">
+                <i class="fa-solid fa-star text-amber-500 text-sm"></i>
+                <span>الصورة الأساسية (الغلاف - تظهر في كروت المنتجات وقوائم الأقسام) *</span>
+              </label>
+              <span class="text-[10px] bg-amber-100 text-amber-800 font-bold px-2 py-0.5 rounded-full">صورة الغلاف</span>
+            </div>
+            <div class="flex items-center gap-3">
+              <input type="file" id="prodPrimaryImageFile" accept="image/*" class="text-xs file:ml-3 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-bold file:bg-amber-100 file:text-amber-800 hover:file:bg-amber-200 cursor-pointer" />
+              <button type="button" onclick="uploadPrimaryProductImage()" class="px-3 py-1.5 bg-amber-600 hover:bg-amber-700 text-white rounded-lg font-bold text-xs transition-colors shadow-xs">
+                <i class="fa-solid fa-cloud-arrow-up ml-1"></i> رفع الأساسية
+              </button>
+            </div>
+            <input type="text" id="prodPrimaryImageUrl" oninput="previewPrimaryImage(this.value)" placeholder="أو الصق رابط الصورة الأساسية هنا (https://...)" class="w-full bg-white border border-amber-200 rounded-lg p-2 focus:border-amber-500 focus:outline-none text-[11px]" />
+            <div id="prodPrimaryImagePreviewContainer" class="hidden flex items-center gap-3 bg-white p-2.5 rounded-xl border border-amber-100">
+              <img id="prodPrimaryImagePreview" src="" class="w-16 h-16 rounded-lg object-cover border border-slate-200 shadow-xs" onerror="this.src='/favicon.ico'" />
+              <div class="text-[11px] text-slate-600">
+                <span class="font-bold text-slate-800 block">معاينة الغلاف الأساسي للمنتج</span>
+                <span class="text-[10px] text-slate-400">هذه هي الصورة التي تظهر في بطاقة المنتج وقوائم الأقسام والموقع الرئيسي.</span>
+              </div>
+            </div>
           </div>
-          <input type="text" id="prodImageUrl" placeholder="أو أدخل رابط الصورة..." class="w-full bg-white border border-slate-200 rounded-lg p-2 focus:border-brand-500 focus:outline-none text-[11px]" />
-          <div id="prodImagePreviewContainer" class="hidden mt-2">
-            <img id="prodImagePreview" src="" class="w-20 h-20 rounded-xl object-cover border border-slate-200" />
+
+          <!-- 2. Secondary Images (Gallery) -->
+          <div class="bg-slate-50 p-4 rounded-xl border border-slate-200 space-y-3">
+            <div class="flex items-center justify-between">
+              <label class="font-bold text-slate-700 text-xs flex items-center gap-1.5">
+                <i class="fa-solid fa-images text-brand-600 text-sm"></i>
+                <span>الصور الفرعية الإضافية (معرض الصور - تظهر داخل صفحة تفاصيل المنتج)</span>
+              </label>
+              <span class="text-[10px] bg-slate-200 text-slate-700 font-bold px-2 py-0.5 rounded-full" id="secondaryImagesCountBadge">0 صور فرعية</span>
+            </div>
+            
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+              <!-- Upload multiple files -->
+              <div class="bg-white p-2.5 rounded-lg border border-slate-200 space-y-1.5">
+                <span class="text-[11px] font-bold text-slate-700 block">رفع صور فرعية متعددة دفعة واحدة:</span>
+                <div class="flex items-center gap-2">
+                  <input type="file" id="prodSecondaryImagesFile" multiple accept="image/*" class="text-xs file:ml-2 file:py-1 file:px-2.5 file:rounded-lg file:border-0 file:text-[11px] file:font-bold file:bg-brand-50 file:text-brand-700 hover:file:bg-brand-100 cursor-pointer w-full" />
+                  <button type="button" onclick="uploadSecondaryProductImages()" class="px-3 py-1.5 bg-brand-700 hover:bg-brand-800 text-white rounded-lg font-bold text-xs whitespace-nowrap transition-colors">
+                    <i class="fa-solid fa-cloud-arrow-up ml-1"></i> رفع
+                  </button>
+                </div>
+              </div>
+
+              <!-- Add URL directly -->
+              <div class="bg-white p-2.5 rounded-lg border border-slate-200 space-y-1.5">
+                <span class="text-[11px] font-bold text-slate-700 block">إضافة صورة فرعية بالرابط:</span>
+                <div class="flex items-center gap-2">
+                  <input type="text" id="prodSecondaryUrlInput" placeholder="https://..." class="w-full bg-slate-50 border border-slate-200 rounded-lg p-1.5 focus:border-brand-500 focus:outline-none text-[11px]" />
+                  <button type="button" onclick="addSecondaryImageUrl()" class="px-3 py-1.5 bg-slate-700 hover:bg-slate-800 text-white rounded-lg font-bold text-xs whitespace-nowrap transition-colors">
+                    <i class="fa-solid fa-plus ml-1"></i> إضافة
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <!-- Secondary Images Preview Grid -->
+            <div id="secondaryImagesGrid" class="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-2.5 pt-1">
+              <!-- Dynamically rendered -->
+            </div>
           </div>
         </div>
 
@@ -1655,13 +1708,137 @@
       });
     }
 
+    let secondaryImagesList = [];
+
+    function renderSecondaryImages() {
+      const container = document.getElementById('secondaryImagesGrid');
+      const badge = document.getElementById('secondaryImagesCountBadge');
+      if (badge) badge.textContent = `${secondaryImagesList.length} صور فرعية`;
+      if (!container) return;
+      if (secondaryImagesList.length === 0) {
+        container.innerHTML = '<div class="col-span-full py-4 text-center text-slate-400 text-[11px] bg-white rounded-xl border border-dashed border-slate-200"><i class="fa-solid fa-images ml-1.5 opacity-60"></i>لم يتم إضافة صور فرعية بعد. يمكنك رفع عدة صور أو إضافتها بالرابط.</div>';
+        return;
+      }
+      container.innerHTML = secondaryImagesList.map((url, idx) => `
+        <div class="relative group rounded-xl overflow-hidden border border-slate-200 bg-white shadow-xs flex flex-col">
+          <img src="${url}" class="w-full h-18 object-cover" onerror="this.src='/favicon.ico'" />
+          <div class="p-1 flex items-center justify-between bg-slate-50 border-t border-slate-100 text-[10px]">
+            <span class="text-slate-500 font-bold px-1">#${idx + 1}</span>
+            <button type="button" onclick="removeSecondaryImage(${idx})" class="text-rose-500 hover:text-rose-700 p-1 rounded hover:bg-rose-50" title="حذف الصورة">
+              <i class="fa-solid fa-trash-can"></i>
+            </button>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    function addSecondaryImageUrl() {
+      const input = document.getElementById('prodSecondaryUrlInput');
+      const url = input.value.trim();
+      if (!url) {
+        showToast('يرجى إدخال رابط الصورة أولاً', 'error');
+        return;
+      }
+      secondaryImagesList.push(url);
+      input.value = '';
+      renderSecondaryImages();
+      showToast('تمت إضافة الصورة الفرعية');
+    }
+
+    function removeSecondaryImage(index) {
+      secondaryImagesList.splice(index, 1);
+      renderSecondaryImages();
+    }
+
+    function previewPrimaryImage(url) {
+      const container = document.getElementById('prodPrimaryImagePreviewContainer');
+      const preview = document.getElementById('prodPrimaryImagePreview');
+      if (url && url.trim()) {
+        preview.src = url.trim();
+        container.classList.remove('hidden');
+      } else {
+        container.classList.add('hidden');
+      }
+    }
+
+    async function uploadPrimaryProductImage() {
+      const fileInput = document.getElementById('prodPrimaryImageFile');
+      if (!fileInput.files || fileInput.files.length === 0) {
+        showToast('يرجى اختيار ملف الصورة الأساسية أولاً', 'error');
+        return;
+      }
+      const formData = new FormData();
+      formData.append('file', fileInput.files[0]);
+
+      showToast('جاري رفع الصورة الأساسية إلى Supabase Storage...');
+      try {
+        const res = await fetch(`${API_BASE}/storage/upload?bucket=products`, {
+          method: 'POST',
+          headers: { 'Authorization': `Bearer ${currentToken}` },
+          body: formData,
+        });
+
+        if (res.ok) {
+          const data = await res.json();
+          document.getElementById('prodPrimaryImageUrl').value = data.url;
+          previewPrimaryImage(data.url);
+          showToast('تم رفع الصورة الأساسية بنجاح!');
+        } else {
+          showToast('فشل رفع الصورة الأساسية', 'error');
+        }
+      } catch (e) {
+        showToast('حدث خطأ أثناء الرفع', 'error');
+      }
+    }
+
+    async function uploadSecondaryProductImages() {
+      const fileInput = document.getElementById('prodSecondaryImagesFile');
+      if (!fileInput.files || fileInput.files.length === 0) {
+        showToast('يرجى اختيار صور فرعية أولاً', 'error');
+        return;
+      }
+      const files = Array.from(fileInput.files);
+      showToast(`جاري رفع ${files.length} صورة فرعية إلى Supabase...`);
+      let uploadedCount = 0;
+      for (const file of files) {
+        const formData = new FormData();
+        formData.append('file', file);
+        try {
+          const res = await fetch(`${API_BASE}/storage/upload?bucket=products`, {
+            method: 'POST',
+            headers: { 'Authorization': `Bearer ${currentToken}` },
+            body: formData,
+          });
+          if (res.ok) {
+            const data = await res.json();
+            if (data.url) {
+              secondaryImagesList.push(data.url);
+              uploadedCount++;
+            }
+          }
+        } catch (e) {
+          console.error('Secondary image upload error:', e);
+        }
+      }
+      fileInput.value = '';
+      renderSecondaryImages();
+      if (uploadedCount > 0) {
+        showToast(`تم رفع ${uploadedCount} صورة فرعية بنجاح!`);
+      } else {
+        showToast('فشل رفع الصور الفرعية', 'error');
+      }
+    }
+
     async function openProductModal() {
       await populateCategoryDropdown();
       document.getElementById('productForm').reset();
       document.getElementById('prodEditId').value = '';
       document.getElementById('productModalTitle').textContent = 'إضافة منتج جديد';
       document.getElementById('prodSubmitBtn').textContent = 'إضافة المنتج إلى Supabase';
-      document.getElementById('prodImagePreviewContainer').classList.add('hidden');
+      document.getElementById('prodPrimaryImageUrl').value = '';
+      document.getElementById('prodPrimaryImagePreviewContainer').classList.add('hidden');
+      secondaryImagesList = [];
+      renderSecondaryImages();
       document.getElementById('productModal').classList.remove('hidden');
     }
 
@@ -1680,14 +1857,22 @@
       document.getElementById('prodMaterial').value = prod.material || '';
       document.getElementById('prodDescription').value = prod.description || '';
       
-      const firstImg = prod.images && prod.images[0] ? prod.images[0].url : '';
-      document.getElementById('prodImageUrl').value = firstImg;
-      if (firstImg) {
-        document.getElementById('prodImagePreview').src = firstImg;
-        document.getElementById('prodImagePreviewContainer').classList.remove('hidden');
+      secondaryImagesList = [];
+      if (prod.images && prod.images.length > 0) {
+        const primary = prod.images.find(img => img.is_primary) || prod.images[0];
+        document.getElementById('prodPrimaryImageUrl').value = primary.url || '';
+        previewPrimaryImage(primary.url || '');
+        
+        prod.images.forEach(img => {
+          if (img !== primary && img.url) {
+            secondaryImagesList.push(img.url);
+          }
+        });
       } else {
-        document.getElementById('prodImagePreviewContainer').classList.add('hidden');
+        document.getElementById('prodPrimaryImageUrl').value = '';
+        previewPrimaryImage('');
       }
+      renderSecondaryImages();
 
       document.getElementById('prodInStock').checked = prod.inStock;
       document.getElementById('prodIsFeatured').checked = !!prod.isFeatured;
@@ -1703,41 +1888,10 @@
       document.getElementById('productModal').classList.add('hidden');
     }
 
-    async function uploadProductImage() {
-      const fileInput = document.getElementById('prodImageFile');
-      if (!fileInput.files || fileInput.files.length === 0) {
-        showToast('يرجى اختيار ملف صورة أولاً', 'error');
-        return;
-      }
-      const formData = new FormData();
-      formData.append('file', fileInput.files[0]);
-
-      showToast('جاري الرفع إلى Supabase Storage...');
-      try {
-        const res = await fetch(`${API_BASE}/storage/upload?bucket=products`, {
-          method: 'POST',
-          headers: { 'Authorization': `Bearer ${currentToken}` },
-          body: formData,
-        });
-
-        if (res.ok) {
-          const data = await res.json();
-          document.getElementById('prodImageUrl').value = data.url;
-          document.getElementById('prodImagePreview').src = data.url;
-          document.getElementById('prodImagePreviewContainer').classList.remove('hidden');
-          showToast('تم رفع الصورة بنجاح!');
-        } else {
-          showToast('فشل رفع الصورة', 'error');
-        }
-      } catch (e) {
-        showToast('حدث خطأ أثناء الرفع', 'error');
-      }
-    }
-
     async function handleProductSubmit(e) {
       e.preventDefault();
       const editId = document.getElementById('prodEditId').value;
-      const imageUrl = document.getElementById('prodImageUrl').value.trim();
+      const primaryUrl = document.getElementById('prodPrimaryImageUrl').value.trim();
 
       const payload = {
         name: document.getElementById('prodName').value.trim(),
@@ -1755,7 +1909,16 @@
         isChairCover: document.getElementById('prodIsChairCover').checked,
       };
 
-      if (imageUrl) payload.images = [{ url: imageUrl, alt: payload.name, is_primary: true }];
+      const images = [];
+      if (primaryUrl) {
+        images.push({ url: primaryUrl, alt: payload.name, is_primary: true });
+      }
+      secondaryImagesList.forEach(url => {
+        if (url && url !== primaryUrl) {
+          images.push({ url, alt: payload.name, is_primary: false });
+        }
+      });
+      payload.images = images;
 
       try {
         const url = editId ? `${API_BASE}/products/${editId}` : `${API_BASE}/products`;
