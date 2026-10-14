@@ -425,6 +425,7 @@
               </tbody>
             </table>
           </div>
+          <div id="products-pagination"></div>
         </div>
       </section>
 
@@ -444,6 +445,7 @@
         <div id="categories-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
           <!-- populated by JS -->
         </div>
+        <div id="categories-pagination" class="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-xs"></div>
       </section>
 
       <!-- ════ 4. ORDERS PANEL (Full CRUD) ════ -->
@@ -485,6 +487,7 @@
               </tbody>
             </table>
           </div>
+          <div id="orders-pagination"></div>
         </div>
       </section>
 
@@ -510,6 +513,7 @@
         <div id="chair-requests-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
           <!-- populated by JS -->
         </div>
+        <div id="chairs-pagination" class="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-xs"></div>
       </section>
 
       <!-- ════ 6. CLIENTS / CUSTOMERS CRM PANEL (Full CRUD) ════ -->
@@ -543,6 +547,7 @@
               </tbody>
             </table>
           </div>
+          <div id="customers-pagination"></div>
         </div>
       </section>
 
@@ -577,6 +582,7 @@
               </tbody>
             </table>
           </div>
+          <div id="expenses-pagination"></div>
         </div>
       </section>
 
@@ -616,6 +622,7 @@
               </tbody>
             </table>
           </div>
+          <div id="shipping-pagination"></div>
           <!-- Bottom sticky action bar -->
           <div class="p-3 bg-slate-50 border-t border-slate-100 flex items-center justify-between">
             <span class="text-xs text-slate-500 font-medium">إجمالي محافظات جمهورية مصر العربية (27 محافظة)</span>
@@ -737,6 +744,7 @@
               </tbody>
             </table>
           </div>
+          <div id="staff-pagination"></div>
         </div>
 
         <!-- ════ Permissions Registry Management Module ════ -->
@@ -850,6 +858,7 @@
               </tbody>
             </table>
           </div>
+          <div id="coupons-pagination"></div>
         </div>
       </section>
 
@@ -1454,6 +1463,96 @@
     let salesChartInstance = null;
     let pendingDeleteCallback = null;
 
+    // ── Pagination Global State ──
+    let productsCurrentPage = 1, productsPageSize = 10;
+    let categoriesCurrentPage = 1, categoriesPageSize = 8;
+    let ordersCurrentPage = 1, ordersPageSize = 10;
+    let currentOrdersList = [];
+    let chairsData = [];
+    let chairsCurrentPage = 1, chairsPageSize = 6;
+    let customersCurrentPage = 1, customersPageSize = 10;
+    let expensesCurrentPage = 1, expensesPageSize = 10;
+    let shippingCurrentPage = 1, shippingPageSize = 10;
+    let staffCurrentPage = 1, staffPageSize = 10;
+    let couponsCurrentPage = 1, couponsPageSize = 10;
+
+    // ── Universal Pagination Component ──
+    function renderPaginationBar({ containerId, currentPage, pageSize, totalItems, onPageChange, onPageSizeChange, allowedSizes = [10, 20, 50] }) {
+      const container = document.getElementById(containerId);
+      if (!container) return;
+
+      if (!totalItems || totalItems === 0) {
+        container.innerHTML = '';
+        return;
+      }
+
+      const totalPages = Math.max(1, Math.ceil(totalItems / pageSize));
+      const safePage = Math.min(Math.max(1, currentPage), totalPages);
+      const startItem = (safePage - 1) * pageSize + 1;
+      const endItem = Math.min(safePage * pageSize, totalItems);
+
+      let pages = [];
+      if (totalPages <= 7) {
+        for (let i = 1; i <= totalPages; i++) pages.push(i);
+      } else {
+        pages.push(1);
+        if (safePage > 3) pages.push('...');
+        const start = Math.max(2, safePage - 1);
+        const end = Math.min(totalPages - 1, safePage + 1);
+        for (let i = start; i <= end; i++) {
+          if (!pages.includes(i)) pages.push(i);
+        }
+        if (safePage < totalPages - 2) pages.push('...');
+        if (!pages.includes(totalPages)) pages.push(totalPages);
+      }
+
+      let html = `
+        <div class="px-4 py-3 bg-white border-t border-slate-100 rounded-b-2xl flex flex-wrap items-center justify-between gap-3 text-xs text-slate-600">
+          <div class="flex items-center gap-3">
+            <span class="font-medium text-slate-500">
+              عرض <strong class="text-slate-800 font-bold font-mono">${startItem}-${endItem}</strong> من أصل <strong class="text-slate-800 font-bold font-mono">${totalItems}</strong>
+            </span>
+            <div class="flex items-center gap-1.5 border-r border-slate-200 pr-3">
+              <span class="text-slate-400">لكل صفحة:</span>
+              <select onchange="${onPageSizeChange}(Number(this.value))" class="bg-slate-50 border border-slate-200 rounded-lg px-2 py-1 font-bold text-slate-700 text-xs focus:outline-none focus:border-brand-500 cursor-pointer">
+                ${allowedSizes.map(s => `<option value="${s}" ${s === pageSize ? 'selected' : ''}>${s}</option>`).join('')}
+              </select>
+            </div>
+          </div>
+
+          <div class="flex items-center gap-1">
+            <button onclick="${onPageChange}(1)" ${safePage === 1 ? 'disabled class="px-2 py-1 rounded-lg border border-slate-200 text-slate-300 cursor-not-allowed"' : 'class="px-2 py-1 rounded-lg border border-slate-200 text-slate-600 hover:bg-slate-50 font-bold transition-colors cursor-pointer"'} title="الصفحة الأولى">
+              <i class="fa-solid fa-angles-right"></i>
+            </button>
+            <button onclick="${onPageChange}(${safePage - 1})" ${safePage === 1 ? 'disabled class="px-2.5 py-1 rounded-lg border border-slate-200 text-slate-300 cursor-not-allowed"' : 'class="px-2.5 py-1 rounded-lg border border-slate-200 text-slate-600 hover:bg-slate-50 font-bold transition-colors cursor-pointer"'} title="الصفحة السابقة">
+              <i class="fa-solid fa-angle-right"></i>
+            </button>
+      `;
+
+      pages.forEach(p => {
+        if (p === '...') {
+          html += `<span class="px-2 py-1 text-slate-400 font-bold">...</span>`;
+        } else if (p === safePage) {
+          html += `<button class="w-7 h-7 rounded-lg bg-brand-600 text-white font-bold text-xs shadow-xs">${p}</button>`;
+        } else {
+          html += `<button onclick="${onPageChange}(${p})" class="w-7 h-7 rounded-lg border border-slate-200 text-slate-700 hover:bg-slate-50 font-bold text-xs transition-colors cursor-pointer">${p}</button>`;
+        }
+      });
+
+      html += `
+            <button onclick="${onPageChange}(${safePage + 1})" ${safePage === totalPages ? 'disabled class="px-2.5 py-1 rounded-lg border border-slate-200 text-slate-300 cursor-not-allowed"' : 'class="px-2.5 py-1 rounded-lg border border-slate-200 text-slate-600 hover:bg-slate-50 font-bold transition-colors cursor-pointer"'} title="الصفحة التالية">
+              <i class="fa-solid fa-angle-left"></i>
+            </button>
+            <button onclick="${onPageChange}(${totalPages})" ${safePage === totalPages ? 'disabled class="px-2 py-1 rounded-lg border border-slate-200 text-slate-300 cursor-not-allowed"' : 'class="px-2.5 py-1 rounded-lg border border-slate-200 text-slate-600 hover:bg-slate-50 font-bold transition-colors cursor-pointer"'} title="الصفحة الأخيرة">
+              <i class="fa-solid fa-angles-left"></i>
+            </button>
+          </div>
+        </div>
+      `;
+
+      container.innerHTML = html;
+    }
+
     // Module Definitions & Default Role Templates
     const ALL_MODULES_KEYS = ['overview', 'products', 'categories', 'orders', 'custom_chairs', 'customers', 'expenses', 'shipping', 'coupons', 'staff'];
     const MODULE_NAMES = {
@@ -1852,46 +1951,85 @@
         const res = await fetch(`${API_BASE}/products`, { headers: getHeaders() });
         if (!res.ok) return;
         productsList = await res.json();
-        document.getElementById('badge-products-count').textContent = productsList.length;
-
-        const tbody = document.getElementById('products-table-tbody');
-        tbody.innerHTML = '';
-        productsList.forEach(p => {
-          const tr = document.createElement('tr');
-          tr.className = 'hover:bg-slate-50/70 transition-colors';
-          const imgUrl = (p.images && p.images[0]) ? p.images[0].url : 'https://placehold.co/100x100?text=Zahra';
-          tr.innerHTML = `
-            <td class="p-3">
-              <div class="flex items-center gap-3">
-                <img src="${imgUrl}" class="w-10 h-10 rounded-lg object-cover border border-slate-100" />
-                <div>
-                  <div class="font-bold text-slate-900">${p.name}</div>
-                  <div class="text-[10px] text-slate-400 font-mono">${p.slug}</div>
-                </div>
-              </div>
-            </td>
-            <td class="p-3 text-slate-600">${p.categoryName || p.category}</td>
-            <td class="p-3 font-bold text-slate-900">${p.price} ج.م</td>
-            <td class="p-3 text-slate-400">${p.originalPrice ? p.originalPrice + ' ج.م' : '-'}</td>
-            <td class="p-3">${p.discount ? `<span class="bg-rose-100 text-rose-700 px-1.5 py-0.5 rounded font-bold text-[10px]">${p.discount}%</span>` : '-'}</td>
-            <td class="p-3 font-semibold">${p.stockCount ?? 10}</td>
-            <td class="p-3">
-              <button onclick="toggleProductStock('${p.id}', ${!p.inStock})" class="px-2.5 py-1 rounded-full text-[11px] font-bold transition-colors ${p.inStock ? 'bg-emerald-100 text-emerald-800 hover:bg-emerald-200' : 'bg-slate-200 text-slate-600 hover:bg-slate-300'}">
-                ${p.inStock ? 'متوفر' : 'غير متوفر'}
-              </button>
-            </td>
-            <td class="p-3 text-center">
-              <div class="flex items-center justify-center gap-2">
-                <button onclick="editProduct('${p.id}')" class="p-1.5 text-slate-400 hover:text-brand-600 rounded" title="تعديل"><i class="fa-solid fa-pen-to-square"></i></button>
-                <button onclick="confirmDeleteProduct('${p.id}', '${p.name}')" class="p-1.5 text-slate-400 hover:text-rose-600 rounded" title="حذف"><i class="fa-solid fa-trash-can"></i></button>
-              </div>
-            </td>
-          `;
-          tbody.appendChild(tr);
-        });
+        const b = document.getElementById('badge-products-count');
+        if (b) b.textContent = productsList.length;
+        renderProductsTable();
       } catch (e) {
         console.warn('Products load error:', e);
       }
+    }
+
+    function renderProductsTable() {
+      const tbody = document.getElementById('products-table-tbody');
+      if (!tbody) return;
+      tbody.innerHTML = '';
+      if (!productsList || productsList.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="8" class="text-center py-10 text-slate-400 font-medium"><i class="fa-solid fa-box-open text-3xl mb-2 block opacity-40"></i>لا توجد منتجات مسجلة حالياً في قاعدة البيانات. اضغط "إضافة منتج جديد" لإضافة أول منتج!</td></tr>`;
+        renderPaginationBar({ containerId: 'products-pagination', currentPage: 1, pageSize: productsPageSize, totalItems: 0 });
+        return;
+      }
+
+      const totalItems = productsList.length;
+      const totalPages = Math.ceil(totalItems / productsPageSize) || 1;
+      if (productsCurrentPage > totalPages) productsCurrentPage = totalPages;
+
+      const start = (productsCurrentPage - 1) * productsPageSize;
+      const pageItems = productsList.slice(start, start + productsPageSize);
+
+      pageItems.forEach(p => {
+        const tr = document.createElement('tr');
+        tr.className = 'hover:bg-slate-50/70 transition-colors';
+        const imgUrl = (p.images && p.images[0]) ? p.images[0].url : 'https://placehold.co/100x100?text=Zahra';
+        tr.innerHTML = `
+          <td class="p-3">
+            <div class="flex items-center gap-3">
+              <img src="${imgUrl}" class="w-10 h-10 rounded-lg object-cover border border-slate-100" />
+              <div>
+                <div class="font-bold text-slate-900">${p.name}</div>
+                <div class="text-[10px] text-slate-400 font-mono">${p.slug}</div>
+              </div>
+            </div>
+          </td>
+          <td class="p-3 text-slate-600">${p.categoryName || p.category}</td>
+          <td class="p-3 font-bold text-slate-900">${p.price} ج.م</td>
+          <td class="p-3 text-slate-400">${p.originalPrice ? p.originalPrice + ' ج.م' : '-'}</td>
+          <td class="p-3">${p.discount ? `<span class="bg-rose-100 text-rose-700 px-1.5 py-0.5 rounded font-bold text-[10px]">${p.discount}%</span>` : '-'}</td>
+          <td class="p-3 font-semibold">${p.stockCount ?? 10}</td>
+          <td class="p-3">
+            <button onclick="toggleProductStock('${p.id}', ${!p.inStock})" class="px-2.5 py-1 rounded-full text-[11px] font-bold transition-colors ${p.inStock ? 'bg-emerald-100 text-emerald-800 hover:bg-emerald-200 cursor-pointer' : 'bg-slate-200 text-slate-600 hover:bg-slate-300 cursor-pointer'}">
+              ${p.inStock ? 'متوفر' : 'غير متوفر'}
+            </button>
+          </td>
+          <td class="p-3 text-center">
+            <div class="flex items-center justify-center gap-2">
+              <button onclick="editProduct('${p.id}')" class="p-1.5 text-slate-400 hover:text-brand-600 rounded transition-colors cursor-pointer" title="تعديل"><i class="fa-solid fa-pen-to-square"></i></button>
+              <button onclick="confirmDeleteProduct('${p.id}', '${p.name}')" class="p-1.5 text-slate-400 hover:text-rose-600 rounded transition-colors cursor-pointer" title="حذف"><i class="fa-solid fa-trash-can"></i></button>
+            </div>
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+
+      renderPaginationBar({
+        containerId: 'products-pagination',
+        currentPage: productsCurrentPage,
+        pageSize: productsPageSize,
+        totalItems: totalItems,
+        onPageChange: 'setProductsPage',
+        onPageSizeChange: 'setProductsPageSize',
+        allowedSizes: [10, 20, 50]
+      });
+    }
+
+    function setProductsPage(page) {
+      productsCurrentPage = page;
+      renderProductsTable();
+    }
+
+    function setProductsPageSize(size) {
+      productsPageSize = size;
+      productsCurrentPage = 1;
+      renderProductsTable();
     }
 
     async function toggleProductStock(id, inStock) {
@@ -2189,35 +2327,74 @@
         const res = await fetch(`${API_BASE}/categories`, { headers: getHeaders() });
         if (!res.ok) return;
         categoriesList = await res.json();
-        document.getElementById('badge-categories-count').textContent = categoriesList.length;
-
-        const grid = document.getElementById('categories-grid');
-        grid.innerHTML = '';
-        categoriesList.forEach(c => {
-          const card = document.createElement('div');
-          card.className = 'bg-white rounded-2xl border border-slate-200 p-4 shadow-sm flex flex-col justify-between';
-          card.innerHTML = `
-            <div class="flex items-center gap-4">
-              <img src="${c.image || c.image_url || 'https://placehold.co/80x80?text=Category'}" class="w-16 h-16 rounded-xl object-cover border border-slate-100" />
-              <div class="flex-1">
-                <h3 class="font-bold text-sm text-slate-900">${c.name || c.name_ar}</h3>
-                <div class="text-[10px] text-slate-400 font-mono">${c.slug}</div>
-                <div class="text-[11px] text-slate-500 mt-1 line-clamp-1">${c.description || ''}</div>
-              </div>
-            </div>
-            <div class="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between text-xs">
-              <span class="text-brand-600 font-bold">${c.productCount || 0} منتجات</span>
-              <div class="flex items-center gap-2">
-                <button onclick="editCategory('${c.id}')" class="p-1 text-slate-400 hover:text-brand-600" title="تعديل"><i class="fa-solid fa-pen-to-square"></i></button>
-                <button onclick="confirmDeleteCategory('${c.id}', '${c.name || c.name_ar}')" class="p-1 text-slate-400 hover:text-rose-600" title="حذف"><i class="fa-solid fa-trash-can"></i></button>
-              </div>
-            </div>
-          `;
-          grid.appendChild(card);
-        });
+        const b = document.getElementById('badge-categories-count');
+        if (b) b.textContent = categoriesList.length;
+        renderCategoriesGrid();
       } catch (e) {
         console.warn('Categories error:', e);
       }
+    }
+
+    function renderCategoriesGrid() {
+      const grid = document.getElementById('categories-grid');
+      if (!grid) return;
+      grid.innerHTML = '';
+      if (!categoriesList || categoriesList.length === 0) {
+        grid.innerHTML = `<div class="col-span-full text-center py-12 text-slate-400 bg-white rounded-2xl border border-slate-200"><i class="fa-solid fa-folder-open text-3xl mb-2 block opacity-40"></i>لا توجد أقسام مسجلة حالياً. اضغط "إضافة قسم جديد" للبدء!</div>`;
+        renderPaginationBar({ containerId: 'categories-pagination', currentPage: 1, pageSize: categoriesPageSize, totalItems: 0 });
+        return;
+      }
+
+      const totalItems = categoriesList.length;
+      const totalPages = Math.ceil(totalItems / categoriesPageSize) || 1;
+      if (categoriesCurrentPage > totalPages) categoriesCurrentPage = totalPages;
+
+      const start = (categoriesCurrentPage - 1) * categoriesPageSize;
+      const pageItems = categoriesList.slice(start, start + categoriesPageSize);
+
+      pageItems.forEach(c => {
+        const card = document.createElement('div');
+        card.className = 'bg-white rounded-2xl border border-slate-200 p-4 shadow-sm flex flex-col justify-between';
+        card.innerHTML = `
+          <div class="flex items-center gap-4">
+            <img src="${c.image || c.image_url || 'https://placehold.co/80x80?text=Category'}" class="w-16 h-16 rounded-xl object-cover border border-slate-100" />
+            <div class="flex-1">
+              <h3 class="font-bold text-sm text-slate-900">${c.name || c.name_ar}</h3>
+              <div class="text-[10px] text-slate-400 font-mono">${c.slug}</div>
+              <div class="text-[11px] text-slate-500 mt-1 line-clamp-1">${c.description || ''}</div>
+            </div>
+          </div>
+          <div class="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between text-xs">
+            <span class="text-brand-600 font-bold">${c.productCount || 0} منتجات</span>
+            <div class="flex items-center gap-2">
+              <button onclick="editCategory('${c.id}')" class="p-1 text-slate-400 hover:text-brand-600 cursor-pointer" title="تعديل"><i class="fa-solid fa-pen-to-square"></i></button>
+              <button onclick="confirmDeleteCategory('${c.id}', '${c.name || c.name_ar}')" class="p-1 text-slate-400 hover:text-rose-600 cursor-pointer" title="حذف"><i class="fa-solid fa-trash-can"></i></button>
+            </div>
+          </div>
+        `;
+        grid.appendChild(card);
+      });
+
+      renderPaginationBar({
+        containerId: 'categories-pagination',
+        currentPage: categoriesCurrentPage,
+        pageSize: categoriesPageSize,
+        totalItems: totalItems,
+        onPageChange: 'setCategoriesPage',
+        onPageSizeChange: 'setCategoriesPageSize',
+        allowedSizes: [8, 16, 32]
+      });
+    }
+
+    function setCategoriesPage(page) {
+      categoriesCurrentPage = page;
+      renderCategoriesGrid();
+    }
+
+    function setCategoriesPageSize(size) {
+      categoriesPageSize = size;
+      categoriesCurrentPage = 1;
+      renderCategoriesGrid();
     }
 
     function openCategoryModal() {
@@ -2312,6 +2489,7 @@
         if (!res.ok) return;
         const data = await res.json();
         ordersData = data.orders || [];
+        ordersCurrentPage = 1;
         renderOrdersTable(ordersData);
 
         // Synchronize accurate pending orders badge directly from live fetched orders
@@ -2328,14 +2506,25 @@
     }
 
     function renderOrdersTable(list) {
+      if (list !== undefined) currentOrdersList = list;
+      const targetList = currentOrdersList || ordersData || [];
       const tbody = document.getElementById('orders-table-tbody');
+      if (!tbody) return;
       tbody.innerHTML = '';
-      if (list.length === 0) {
+      if (targetList.length === 0) {
         tbody.innerHTML = `<tr><td colspan="8" class="text-center py-8 text-slate-400">لا توجد طلبات تطابق الفلتر</td></tr>`;
+        renderPaginationBar({ containerId: 'orders-pagination', currentPage: 1, pageSize: ordersPageSize, totalItems: 0 });
         return;
       }
 
-      list.forEach(o => {
+      const totalItems = targetList.length;
+      const totalPages = Math.ceil(totalItems / ordersPageSize) || 1;
+      if (ordersCurrentPage > totalPages) ordersCurrentPage = totalPages;
+
+      const start = (ordersCurrentPage - 1) * ordersPageSize;
+      const pageItems = targetList.slice(start, start + ordersPageSize);
+
+      pageItems.forEach(o => {
         const tr = document.createElement('tr');
         tr.className = 'hover:bg-slate-50/70 transition-colors';
         const itemCount = o.items ? o.items.length : 0;
@@ -2377,6 +2566,27 @@
         `;
         tbody.appendChild(tr);
       });
+
+      renderPaginationBar({
+        containerId: 'orders-pagination',
+        currentPage: ordersCurrentPage,
+        pageSize: ordersPageSize,
+        totalItems: totalItems,
+        onPageChange: 'setOrdersPage',
+        onPageSizeChange: 'setOrdersPageSize',
+        allowedSizes: [10, 20, 50, 100]
+      });
+    }
+
+    function setOrdersPage(page) {
+      ordersCurrentPage = page;
+      renderOrdersTable();
+    }
+
+    function setOrdersPageSize(size) {
+      ordersPageSize = size;
+      ordersCurrentPage = 1;
+      renderOrdersTable();
     }
 
     function filterOrders(status) {
@@ -2389,6 +2599,7 @@
 
     function handleOrderSearch(query) {
       const q = query.toLowerCase().trim();
+      ordersCurrentPage = 1;
       if (!q) { renderOrdersTable(ordersData); return; }
       const filtered = ordersData.filter(o => 
         (o.orderNumber && o.orderNumber.toLowerCase().includes(q)) ||
@@ -2883,10 +3094,10 @@
       try {
         const res = await fetch(`${API_BASE}/chair-custom`, { headers: getHeaders() });
         if (!res.ok) return;
-        const requests = await res.json();
+        chairsData = await res.json();
 
         // Synchronize accurate new chairs badge directly from live fetched requests
-        const newChairsCount = requests.filter(r => r.status === 'new').length;
+        const newChairsCount = (chairsData || []).filter(r => r.status === 'new').length;
         const b = document.getElementById('badge-new-chairs');
         if (b) {
           b.textContent = newChairsCount;
@@ -2894,66 +3105,100 @@
           else b.classList.add('hidden');
         }
 
-        const grid = document.getElementById('chair-requests-grid');
-        grid.innerHTML = '';
-        if (requests.length === 0) {
-          grid.innerHTML = `<div class="col-span-3 text-center py-12 text-slate-400 bg-white rounded-2xl border border-slate-200">لا توجد طلبات كراسي عمولة جديدة حالياً</div>`;
-          return;
-        }
-
-        requests.forEach(req => {
-          const card = document.createElement('div');
-          card.className = 'bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-sm flex flex-col justify-between hover:shadow-md transition-shadow';
-          card.innerHTML = `
-            <div>
-              <div class="relative h-48 bg-slate-100 group cursor-pointer overflow-hidden" onclick="openImageModal('${req.uploaded_photo_url}', 'صورة كرسي العميل: ${req.customer_name}')">
-                <img src="${req.uploaded_photo_url}" alt="صورة الكرسي" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
-                <div class="absolute inset-0 bg-black/30 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center text-white gap-2 font-bold text-xs">
-                  <i class="fa-solid fa-magnifying-glass-plus text-lg"></i>
-                  معاينة وتكبير الصورة
-                </div>
-                <div class="absolute top-3 right-3">${renderStatusBadge(req.status)}</div>
-              </div>
-
-              <div class="p-4 space-y-3">
-                <div class="flex items-center justify-between">
-                  <h3 class="font-bold text-sm text-slate-900">${req.customer_name}</h3>
-                  <span class="text-xs font-semibold text-brand-700">+${req.custom_extra_fee} ج.م (عمولة)</span>
-                </div>
-                <div class="text-xs text-slate-500 font-mono">${req.customer_phone}</div>
-
-                <div class="bg-slate-50 p-2.5 rounded-xl border border-slate-100 space-y-1 text-xs">
-                  <div class="flex justify-between"><span class="text-slate-400">اللون المختار:</span><span class="font-bold text-slate-800">${req.fabric_color}</span></div>
-                  <div class="flex justify-between"><span class="text-slate-400">النقشة:</span><span class="font-bold text-slate-800">${req.pattern_type}</span></div>
-                  <div class="flex justify-between"><span class="text-slate-400">عدد الكراسي:</span><span class="font-bold text-slate-800">${req.chairs_count} كراسي</span></div>
-                </div>
-
-                ${req.admin_notes ? `<div class="text-[11px] text-amber-700 bg-amber-50 p-2 rounded-lg border border-amber-100 font-medium">ملاحظات: ${req.admin_notes}</div>` : ''}
-              </div>
-            </div>
-
-            <div class="p-4 pt-0 border-t border-slate-100 space-y-2">
-              <a href="${req.whatsapp_link}" target="_blank" class="w-full py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl text-xs flex items-center justify-center gap-2 shadow-sm transition-colors">
-                <i class="fa-brands fa-whatsapp text-sm"></i>
-                بدء محادثة واتساب مع العميل
-              </a>
-              <div class="flex items-center justify-between text-[11px] pt-1">
-                <span class="text-slate-400">تحديث الحالة:</span>
-                <select onchange="updateChairStatus('${req.id}', this.value)" class="bg-slate-50 border border-slate-200 rounded-lg px-2 py-1 font-semibold text-xs focus:outline-none">
-                  <option value="new" ${req.status === 'new' ? 'selected' : ''}>جديد</option>
-                  <option value="contacted" ${req.status === 'contacted' ? 'selected' : ''}>تم التواصل</option>
-                  <option value="in_tailoring" ${req.status === 'in_tailoring' ? 'selected' : ''}>جاري التفصيل</option>
-                  <option value="completed" ${req.status === 'completed' ? 'selected' : ''}>مكتمل</option>
-                  <option value="cancelled" ${req.status === 'cancelled' ? 'selected' : ''}>ملغي</option>
-                </select>
-              </div>
-            </div>
-          `;
-          grid.appendChild(card);
-        });
+        renderChairsGrid();
       } catch (e) {
         console.warn('Chair requests error:', e);
       }
+    }
+
+    function renderChairsGrid() {
+      const grid = document.getElementById('chair-requests-grid');
+      if (!grid) return;
+      grid.innerHTML = '';
+      if (!chairsData || chairsData.length === 0) {
+        grid.innerHTML = `<div class="col-span-full text-center py-12 text-slate-400 bg-white rounded-2xl border border-slate-200"><i class="fa-solid fa-chair text-3xl mb-2 block opacity-40"></i>لا توجد طلبات كراسي عمولة جديدة حالياً</div>`;
+        renderPaginationBar({ containerId: 'chairs-pagination', currentPage: 1, pageSize: chairsPageSize, totalItems: 0 });
+        return;
+      }
+
+      const totalItems = chairsData.length;
+      const totalPages = Math.ceil(totalItems / chairsPageSize) || 1;
+      if (chairsCurrentPage > totalPages) chairsCurrentPage = totalPages;
+
+      const start = (chairsCurrentPage - 1) * chairsPageSize;
+      const pageItems = chairsData.slice(start, start + chairsPageSize);
+
+      pageItems.forEach(req => {
+        const card = document.createElement('div');
+        card.className = 'bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-sm flex flex-col justify-between hover:shadow-md transition-shadow';
+        card.innerHTML = `
+          <div>
+            <div class="relative h-48 bg-slate-100 group cursor-pointer overflow-hidden" onclick="openImageModal('${req.uploaded_photo_url}', 'صورة كرسي العميل: ${req.customer_name}')">
+              <img src="${req.uploaded_photo_url}" alt="صورة الكرسي" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
+              <div class="absolute inset-0 bg-black/30 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center text-white gap-2 font-bold text-xs">
+                <i class="fa-solid fa-magnifying-glass-plus text-lg"></i>
+                معاينة وتكبير الصورة
+              </div>
+              <div class="absolute top-3 right-3">${renderStatusBadge(req.status)}</div>
+            </div>
+
+            <div class="p-4 space-y-3">
+              <div class="flex items-center justify-between">
+                <h3 class="font-bold text-sm text-slate-900">${req.customer_name}</h3>
+                <span class="text-xs font-semibold text-brand-700">+${req.custom_extra_fee} ج.م (عمولة)</span>
+              </div>
+              <div class="text-xs text-slate-500 font-mono">${req.customer_phone}</div>
+
+              <div class="bg-slate-50 p-2.5 rounded-xl border border-slate-100 space-y-1 text-xs">
+                <div class="flex justify-between"><span class="text-slate-400">اللون المختار:</span><span class="font-bold text-slate-800">${req.fabric_color}</span></div>
+                <div class="flex justify-between"><span class="text-slate-400">النقشة:</span><span class="font-bold text-slate-800">${req.pattern_type}</span></div>
+                <div class="flex justify-between"><span class="text-slate-400">عدد الكراسي:</span><span class="font-bold text-slate-800">${req.chairs_count} كراسي</span></div>
+              </div>
+
+              ${req.admin_notes ? `<div class="text-[11px] text-amber-700 bg-amber-50 p-2 rounded-lg border border-amber-100 font-medium">ملاحظات: ${req.admin_notes}</div>` : ''}
+            </div>
+          </div>
+
+          <div class="p-4 pt-0 border-t border-slate-100 space-y-2">
+            <a href="${req.whatsapp_link}" target="_blank" class="w-full py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl text-xs flex items-center justify-center gap-2 shadow-sm transition-colors cursor-pointer">
+              <i class="fa-brands fa-whatsapp text-sm"></i>
+              بدء محادثة واتساب مع العميل
+            </a>
+            <div class="flex items-center justify-between text-[11px] pt-1">
+              <span class="text-slate-400">تحديث الحالة:</span>
+              <select onchange="updateChairStatus('${req.id}', this.value)" class="bg-slate-50 border border-slate-200 rounded-lg px-2 py-1 font-semibold text-xs focus:outline-none cursor-pointer">
+                <option value="new" ${req.status === 'new' ? 'selected' : ''}>جديد</option>
+                <option value="contacted" ${req.status === 'contacted' ? 'selected' : ''}>تم التواصل</option>
+                <option value="in_tailoring" ${req.status === 'in_tailoring' ? 'selected' : ''}>جاري التفصيل</option>
+                <option value="completed" ${req.status === 'completed' ? 'selected' : ''}>مكتمل</option>
+                <option value="cancelled" ${req.status === 'cancelled' ? 'selected' : ''}>ملغي</option>
+              </select>
+            </div>
+          </div>
+        `;
+        grid.appendChild(card);
+      });
+
+      renderPaginationBar({
+        containerId: 'chairs-pagination',
+        currentPage: chairsCurrentPage,
+        pageSize: chairsPageSize,
+        totalItems: totalItems,
+        onPageChange: 'setChairsPage',
+        onPageSizeChange: 'setChairsPageSize',
+        allowedSizes: [6, 12, 24]
+      });
+    }
+
+    function setChairsPage(page) {
+      chairsCurrentPage = page;
+      renderChairsGrid();
+    }
+
+    function setChairsPageSize(size) {
+      chairsPageSize = size;
+      chairsCurrentPage = 1;
+      renderChairsGrid();
     }
 
     async function updateChairStatus(reqId, status) {
@@ -2989,43 +3234,77 @@
         const res = await fetch(`${API_BASE}/customers`, { headers: getHeaders() });
         if (!res.ok) return;
         customersData = await res.json();
-        document.getElementById('badge-clients-count').textContent = customersData.length;
-
-        const tbody = document.getElementById('customers-table-tbody');
-        tbody.innerHTML = '';
-        if (customersData.length === 0) {
-          tbody.innerHTML = `<tr><td colspan="6" class="text-center py-8 text-slate-400">لا يوجد عملاء مسجلين بعد. اضغط "إضافة عميل جديد" لإضافة أول عميل!</td></tr>`;
-          return;
-        }
-
-        customersData.forEach(c => {
-          const tr = document.createElement('tr');
-          tr.className = 'hover:bg-slate-50/70 transition-colors';
-          tr.innerHTML = `
-            <td class="p-3">
-              <div class="font-bold text-slate-900">${c.name}</div>
-              <div class="text-[10px] text-slate-400 font-mono">${c.email || ''}</div>
-            </td>
-            <td class="p-3 font-mono font-medium">${c.phone}</td>
-            <td class="p-3 text-slate-600">${c.governorate || '-'} ${c.city ? ' - ' + c.city : ''}</td>
-            <td class="p-3 font-semibold">${c.totalOrders} طلبات</td>
-            <td class="p-3 font-bold text-emerald-600">${(c.totalSpend || 0).toLocaleString()} ج.م</td>
-            <td class="p-3 text-center">
-              <div class="flex items-center justify-center gap-2">
-                <a href="https://wa.me/2${c.phone}" target="_blank" class="px-2 py-1 bg-emerald-50 text-emerald-700 hover:bg-emerald-100 font-bold rounded-lg text-xs inline-flex items-center gap-1" title="واتساب فوري">
-                  <i class="fa-brands fa-whatsapp text-sm"></i>
-                  واتساب
-                </a>
-                <button onclick="editCustomer('${c.id}')" class="p-1.5 text-slate-400 hover:text-brand-600 rounded" title="تعديل"><i class="fa-solid fa-pen-to-square"></i></button>
-                <button onclick="confirmDeleteCustomer('${c.id}', '${c.name}')" class="p-1.5 text-slate-400 hover:text-rose-600 rounded" title="حذف"><i class="fa-solid fa-trash-can"></i></button>
-              </div>
-            </td>
-          `;
-          tbody.appendChild(tr);
-        });
+        const b = document.getElementById('badge-clients-count');
+        if (b) b.textContent = customersData.length;
+        renderCustomersTable();
       } catch (e) {
         console.warn('Customers error:', e);
       }
+    }
+
+    function renderCustomersTable() {
+      const tbody = document.getElementById('customers-table-tbody');
+      if (!tbody) return;
+      tbody.innerHTML = '';
+      if (!customersData || customersData.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="6" class="text-center py-8 text-slate-400">لا يوجد عملاء مسجلين بعد. اضغط "إضافة عميل جديد" لإضافة أول عميل!</td></tr>`;
+        renderPaginationBar({ containerId: 'customers-pagination', currentPage: 1, pageSize: customersPageSize, totalItems: 0 });
+        return;
+      }
+
+      const totalItems = customersData.length;
+      const totalPages = Math.ceil(totalItems / customersPageSize) || 1;
+      if (customersCurrentPage > totalPages) customersCurrentPage = totalPages;
+
+      const start = (customersCurrentPage - 1) * customersPageSize;
+      const pageItems = customersData.slice(start, start + customersPageSize);
+
+      pageItems.forEach(c => {
+        const tr = document.createElement('tr');
+        tr.className = 'hover:bg-slate-50/70 transition-colors';
+        tr.innerHTML = `
+          <td class="p-3">
+            <div class="font-bold text-slate-900">${c.name}</div>
+            <div class="text-[10px] text-slate-400 font-mono">${c.email || ''}</div>
+          </td>
+          <td class="p-3 font-mono font-medium">${c.phone}</td>
+          <td class="p-3 text-slate-600">${c.governorate || '-'} ${c.city ? ' - ' + c.city : ''}</td>
+          <td class="p-3 font-semibold">${c.totalOrders} طلبات</td>
+          <td class="p-3 font-bold text-emerald-600">${(c.totalSpend || 0).toLocaleString()} ج.م</td>
+          <td class="p-3 text-center">
+            <div class="flex items-center justify-center gap-2">
+              <a href="https://wa.me/2${c.phone}" target="_blank" class="px-2 py-1 bg-emerald-50 text-emerald-700 hover:bg-emerald-100 font-bold rounded-lg text-xs inline-flex items-center gap-1 cursor-pointer" title="واتساب فوري">
+                <i class="fa-brands fa-whatsapp text-sm"></i>
+                واتساب
+              </a>
+              <button onclick="editCustomer('${c.id}')" class="p-1.5 text-slate-400 hover:text-brand-600 rounded transition-colors cursor-pointer" title="تعديل"><i class="fa-solid fa-pen-to-square"></i></button>
+              <button onclick="confirmDeleteCustomer('${c.id}', '${c.name}')" class="p-1.5 text-slate-400 hover:text-rose-600 rounded transition-colors cursor-pointer" title="حذف"><i class="fa-solid fa-trash-can"></i></button>
+            </div>
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+
+      renderPaginationBar({
+        containerId: 'customers-pagination',
+        currentPage: customersCurrentPage,
+        pageSize: customersPageSize,
+        totalItems: totalItems,
+        onPageChange: 'setCustomersPage',
+        onPageSizeChange: 'setCustomersPageSize',
+        allowedSizes: [10, 20, 50]
+      });
+    }
+
+    function setCustomersPage(page) {
+      customersCurrentPage = page;
+      renderCustomersTable();
+    }
+
+    function setCustomersPageSize(size) {
+      customersPageSize = size;
+      customersCurrentPage = 1;
+      renderCustomersTable();
     }
 
     function openCustomerModal() {
@@ -3120,32 +3399,65 @@
         const res = await fetch(`${API_BASE}/expenses`, { headers: getHeaders() });
         if (!res.ok) return;
         expensesData = await res.json();
-
-        const tbody = document.getElementById('expenses-table-tbody');
-        tbody.innerHTML = '';
-        if (expensesData.length === 0) {
-          tbody.innerHTML = `<tr><td colspan="6" class="text-center py-8 text-slate-400">لا توجد بنود مصروفات مسجلة بعد</td></tr>`;
-          return;
-        }
-
-        expensesData.forEach(exp => {
-          const tr = document.createElement('tr');
-          tr.className = 'hover:bg-slate-50/70 transition-colors';
-          tr.innerHTML = `
-            <td class="p-3 font-bold text-slate-900">${exp.title}</td>
-            <td class="p-3"><span class="px-2 py-0.5 rounded-lg text-[10px] font-bold bg-slate-100 text-slate-700">${exp.category.replace('_', ' ')}</span></td>
-            <td class="p-3 font-bold text-rose-600 font-mono">${(exp.amount || 0).toLocaleString()} ج.م</td>
-            <td class="p-3 text-slate-400 font-mono">${new Date(exp.date).toLocaleDateString('ar-EG')}</td>
-            <td class="p-3 text-slate-500">${exp.notes || '-'}</td>
-            <td class="p-3 text-center">
-              <button onclick="confirmDeleteExpense('${exp.id}', '${exp.title}')" class="p-1.5 text-slate-400 hover:text-rose-600 rounded" title="حذف"><i class="fa-solid fa-trash-can"></i></button>
-            </td>
-          `;
-          tbody.appendChild(tr);
-        });
+        renderExpensesTable();
       } catch (e) {
         console.warn('Expenses error:', e);
       }
+    }
+
+    function renderExpensesTable() {
+      const tbody = document.getElementById('expenses-table-tbody');
+      if (!tbody) return;
+      tbody.innerHTML = '';
+      if (!expensesData || expensesData.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="6" class="text-center py-8 text-slate-400">لا توجد بنود مصروفات مسجلة بعد</td></tr>`;
+        renderPaginationBar({ containerId: 'expenses-pagination', currentPage: 1, pageSize: expensesPageSize, totalItems: 0 });
+        return;
+      }
+
+      const totalItems = expensesData.length;
+      const totalPages = Math.ceil(totalItems / expensesPageSize) || 1;
+      if (expensesCurrentPage > totalPages) expensesCurrentPage = totalPages;
+
+      const start = (expensesCurrentPage - 1) * expensesPageSize;
+      const pageItems = expensesData.slice(start, start + expensesPageSize);
+
+      pageItems.forEach(exp => {
+        const tr = document.createElement('tr');
+        tr.className = 'hover:bg-slate-50/70 transition-colors';
+        tr.innerHTML = `
+          <td class="p-3 font-bold text-slate-900">${exp.title}</td>
+          <td class="p-3"><span class="px-2 py-0.5 rounded-lg text-[10px] font-bold bg-slate-100 text-slate-700">${exp.category.replace('_', ' ')}</span></td>
+          <td class="p-3 font-bold text-rose-600 font-mono">${(exp.amount || 0).toLocaleString()} ج.م</td>
+          <td class="p-3 text-slate-400 font-mono">${new Date(exp.date).toLocaleDateString('ar-EG')}</td>
+          <td class="p-3 text-slate-500">${exp.notes || '-'}</td>
+          <td class="p-3 text-center">
+            <button onclick="confirmDeleteExpense('${exp.id}', '${exp.title}')" class="p-1.5 text-slate-400 hover:text-rose-600 rounded transition-colors cursor-pointer" title="حذف"><i class="fa-solid fa-trash-can"></i></button>
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+
+      renderPaginationBar({
+        containerId: 'expenses-pagination',
+        currentPage: expensesCurrentPage,
+        pageSize: expensesPageSize,
+        totalItems: totalItems,
+        onPageChange: 'setExpensesPage',
+        onPageSizeChange: 'setExpensesPageSize',
+        allowedSizes: [10, 20, 50]
+      });
+    }
+
+    function setExpensesPage(page) {
+      expensesCurrentPage = page;
+      renderExpensesTable();
+    }
+
+    function setExpensesPageSize(size) {
+      expensesPageSize = size;
+      expensesCurrentPage = 1;
+      renderExpensesTable();
     }
 
     function openExpenseModal() {
@@ -3213,55 +3525,101 @@
     // ── 8. SHIPPING ZONES (With Clear Arabic Badges & Status) ──
     let cachedShippingZones = [];
 
+    function updateCachedZone(id, field, value) {
+      const zone = cachedShippingZones.find(z => z.id === id);
+      if (zone) {
+        zone[field] = value;
+      }
+    }
+
     async function loadShippingZones() {
       try {
         const res = await fetch(`${API_BASE}/shipping/zones`, { headers: getHeaders() });
         if (!res.ok) return;
         const zones = await res.json();
         cachedShippingZones = zones;
-
-        const tbody = document.getElementById('shipping-table-tbody');
-        tbody.innerHTML = '';
-        zones.forEach(z => {
-          const tr = document.createElement('tr');
-          tr.className = 'hover:bg-slate-50/70 transition-colors';
-          tr.innerHTML = `
-            <td class="p-3 font-bold text-slate-900">${z.governorate_name_ar}</td>
-            <td class="p-3">
-              <input type="number" id="fee-${z.id}" value="${z.shipping_fee}" class="w-20 text-xs bg-slate-50 border border-slate-200 rounded p-1 text-center font-bold" />
-            </td>
-            <td class="p-3">
-              <input type="text" id="days-${z.id}" value="${z.estimated_days}" class="w-36 text-xs bg-slate-50 border border-slate-200 rounded p-1 font-medium" />
-            </td>
-            <td class="p-3">
-              <div class="flex items-center gap-3">
-                <label class="inline-flex items-center cursor-pointer">
-                  <input type="checkbox" id="active-${z.id}" onchange="toggleShippingBadge('${z.id}')" ${z.is_active ? 'checked' : ''} class="sr-only peer">
-                  <div class="w-9 h-5 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:right-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-emerald-600"></div>
-                </label>
-                <span id="badge-shipping-${z.id}">
-                  ${z.is_active 
-                    ? `<span class="px-2.5 py-1 rounded-full text-[11px] font-bold bg-emerald-100 text-emerald-800 flex items-center gap-1.5"><span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>متاح للتوصيل</span>` 
-                    : `<span class="px-2.5 py-1 rounded-full text-[11px] font-bold bg-slate-100 text-slate-500">التوصيل متوقف</span>`}
-                </span>
-              </div>
-            </td>
-            <td class="p-3 text-center">
-              <button onclick="saveZone('${z.id}', '${z.governorate_name_ar}')" class="px-3 py-1 bg-brand-50 hover:bg-brand-100 text-brand-700 font-bold rounded-lg text-xs transition-colors">
-                حفظ على Supabase
-              </button>
-            </td>
-          `;
-          tbody.appendChild(tr);
-        });
+        renderShippingTable();
       } catch (e) {
         console.warn('Shipping zones error:', e);
       }
     }
 
+    function renderShippingTable() {
+      const tbody = document.getElementById('shipping-table-tbody');
+      if (!tbody) return;
+      tbody.innerHTML = '';
+      if (!cachedShippingZones || cachedShippingZones.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="5" class="text-center py-8 text-slate-400">لا توجد مناطق شحن مسجلة</td></tr>`;
+        renderPaginationBar({ containerId: 'shipping-pagination', currentPage: 1, pageSize: shippingPageSize, totalItems: 0 });
+        return;
+      }
+
+      const totalItems = cachedShippingZones.length;
+      const totalPages = Math.ceil(totalItems / shippingPageSize) || 1;
+      if (shippingCurrentPage > totalPages) shippingCurrentPage = totalPages;
+
+      const start = (shippingCurrentPage - 1) * shippingPageSize;
+      const pageItems = cachedShippingZones.slice(start, start + shippingPageSize);
+
+      pageItems.forEach(z => {
+        const tr = document.createElement('tr');
+        tr.className = 'hover:bg-slate-50/70 transition-colors';
+        tr.innerHTML = `
+          <td class="p-3 font-bold text-slate-900">${z.governorate_name_ar}</td>
+          <td class="p-3">
+            <input type="number" id="fee-${z.id}" value="${z.shipping_fee}" oninput="updateCachedZone('${z.id}', 'shipping_fee', Number(this.value))" class="w-20 text-xs bg-slate-50 border border-slate-200 rounded p-1 text-center font-bold" />
+          </td>
+          <td class="p-3">
+            <input type="text" id="days-${z.id}" value="${z.estimated_days}" oninput="updateCachedZone('${z.id}', 'estimated_days', this.value)" class="w-36 text-xs bg-slate-50 border border-slate-200 rounded p-1 font-medium" />
+          </td>
+          <td class="p-3">
+            <div class="flex items-center gap-3">
+              <label class="inline-flex items-center cursor-pointer">
+                <input type="checkbox" id="active-${z.id}" onchange="updateCachedZone('${z.id}', 'is_active', this.checked); toggleShippingBadge('${z.id}')" ${z.is_active ? 'checked' : ''} class="sr-only peer">
+                <div class="w-9 h-5 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:right-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-emerald-600"></div>
+              </label>
+              <span id="badge-shipping-${z.id}">
+                ${z.is_active 
+                  ? `<span class="px-2.5 py-1 rounded-full text-[11px] font-bold bg-emerald-100 text-emerald-800 flex items-center gap-1.5"><span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>متاح للتوصيل</span>` 
+                  : `<span class="px-2.5 py-1 rounded-full text-[11px] font-bold bg-slate-100 text-slate-500">التوصيل متوقف</span>`}
+              </span>
+            </div>
+          </td>
+          <td class="p-3 text-center">
+            <button onclick="saveZone('${z.id}', '${z.governorate_name_ar}')" class="px-3 py-1 bg-brand-50 hover:bg-brand-100 text-brand-700 font-bold rounded-lg text-xs transition-colors cursor-pointer">
+              حفظ على Supabase
+            </button>
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+
+      renderPaginationBar({
+        containerId: 'shipping-pagination',
+        currentPage: shippingCurrentPage,
+        pageSize: shippingPageSize,
+        totalItems: totalItems,
+        onPageChange: 'setShippingPage',
+        onPageSizeChange: 'setShippingPageSize',
+        allowedSizes: [10, 27, 50]
+      });
+    }
+
+    function setShippingPage(page) {
+      shippingCurrentPage = page;
+      renderShippingTable();
+    }
+
+    function setShippingPageSize(size) {
+      shippingPageSize = size;
+      shippingCurrentPage = 1;
+      renderShippingTable();
+    }
+
     function toggleShippingBadge(id) {
-      const isChecked = document.getElementById(`active-${id}`).checked;
+      const isChecked = document.getElementById(`active-${id}`)?.checked;
       const badgeSpan = document.getElementById(`badge-shipping-${id}`);
+      if (!badgeSpan) return;
       if (isChecked) {
         badgeSpan.innerHTML = `<span class="px-2.5 py-1 rounded-full text-[11px] font-bold bg-emerald-100 text-emerald-800 flex items-center gap-1.5"><span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>متاح للتوصيل</span>`;
       } else {
@@ -3270,9 +3628,13 @@
     }
 
     async function saveZone(id, name) {
-      const fee = Number(document.getElementById(`fee-${id}`).value);
-      const days = document.getElementById(`days-${id}`).value;
-      const isActive = document.getElementById(`active-${id}`).checked;
+      const z = cachedShippingZones.find(item => item.id === id);
+      const feeEl = document.getElementById(`fee-${id}`);
+      const daysEl = document.getElementById(`days-${id}`);
+      const activeEl = document.getElementById(`active-${id}`);
+      const fee = feeEl ? Number(feeEl.value) : (z ? z.shipping_fee : 0);
+      const days = daysEl ? daysEl.value : (z ? z.estimated_days : '2-3 أيام');
+      const isActive = activeEl ? activeEl.checked : (z ? z.is_active : true);
 
       try {
         const res = await fetch(`${API_BASE}/shipping/zones/${id}`, {
@@ -3375,54 +3737,88 @@
         const badgeStaff = document.getElementById('badge-staff-count');
         if (badgeStaff) badgeStaff.textContent = total;
 
-        const tbody = document.getElementById('staff-table-tbody');
-        tbody.innerHTML = '';
-        if (staffData.length === 0) {
-          tbody.innerHTML = `<tr><td colspan="7" class="text-center py-8 text-slate-400">لا يوجد مشرفين مسجلين بعد. اضغط "إضافة مشرف وصلاحيات" لإضافة مشرف جديد!</td></tr>`;
-          return;
-        }
-
-        staffData.forEach(u => {
-          const tr = document.createElement('tr');
-          tr.className = 'hover:bg-slate-50/70 transition-colors';
-          const roleLabel = u.role === 'ADMIN' ? 'مدير عام (ADMIN)' : u.role === 'MANAGER' ? 'مشرف عمليات (MANAGER)' : u.role === 'SUPPORT' ? 'خدمة عملاء (SUPPORT)' : 'مخصص (CUSTOM)';
-          const roleColor = u.role === 'ADMIN' ? 'bg-purple-100 text-purple-800' : u.role === 'MANAGER' ? 'bg-blue-100 text-blue-800' : u.role === 'SUPPORT' ? 'bg-teal-100 text-teal-800' : 'bg-amber-100 text-amber-800';
-
-          const userPerms = (u.permissions && u.permissions.length > 0) ? u.permissions : (ROLE_PERMISSIONS_TEMPLATE[u.role] || []);
-          let permsHtml = '';
-          if (u.role === 'ADMIN') {
-            permsHtml = `<span class="px-2 py-0.5 rounded-md text-[10px] font-bold bg-purple-50 text-purple-700 border border-purple-200">كامل الصلاحيات (9 أقسام)</span>`;
-          } else {
-            permsHtml = `<div class="flex flex-wrap gap-1 max-w-xs">` +
-              userPerms.map(p => `<span class="px-1.5 py-0.5 rounded text-[9px] font-semibold bg-slate-100 text-slate-700 border border-slate-200">${MODULE_NAMES[p] || p}</span>`).join('') +
-              `</div>`;
-          }
-
-          tr.innerHTML = `
-            <td class="p-3">
-              <div class="font-bold text-slate-900">${u.full_name}</div>
-              <div class="text-[10px] text-slate-400 font-mono">${u.id.slice(0, 8)}...</div>
-            </td>
-            <td class="p-3 font-mono text-slate-600">${u.email}</td>
-            <td class="p-3"><span class="px-2.5 py-1 rounded-full text-[10px] font-bold ${roleColor}">${roleLabel}</span></td>
-            <td class="p-3">${permsHtml}</td>
-            <td class="p-3">${u.is_active ? '<span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-800">نشط</span>' : '<span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-slate-100 text-slate-500">معطل</span>'}</td>
-            <td class="p-3 text-slate-400 font-mono">${new Date(u.created_at).toLocaleDateString('ar-EG')}</td>
-            <td class="p-3 text-center">
-              <div class="flex items-center justify-center gap-2">
-                <button onclick="editStaff('${u.id}')" class="p-1.5 text-slate-400 hover:text-brand-600 rounded transition-colors" title="تعديل الصلاحيات وبيانات المشرف"><i class="fa-solid fa-pen-to-square"></i></button>
-                ${u.email !== 'admin@zahra-store.com' ? `
-                  <button onclick="confirmDeleteStaff('${u.id}', '${u.full_name}')" class="p-1.5 text-slate-400 hover:text-rose-600 rounded transition-colors" title="حذف المشرف"><i class="fa-solid fa-trash-can"></i></button>
-                ` : '<span class="text-[10px] text-slate-400 font-bold">المدير الأساسي</span>'}
-              </div>
-            </td>
-          `;
-          tbody.appendChild(tr);
-        });
+        renderStaffTable();
         loadPermissions();
       } catch (e) {
         console.warn('Staff error:', e);
       }
+    }
+
+    function renderStaffTable() {
+      const tbody = document.getElementById('staff-table-tbody');
+      if (!tbody) return;
+      tbody.innerHTML = '';
+      if (!staffData || staffData.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="7" class="text-center py-8 text-slate-400">لا يوجد مشرفين مسجلين بعد. اضغط "إضافة مشرف وصلاحيات" لإضافة مشرف جديد!</td></tr>`;
+        renderPaginationBar({ containerId: 'staff-pagination', currentPage: 1, pageSize: staffPageSize, totalItems: 0 });
+        return;
+      }
+
+      const totalItems = staffData.length;
+      const totalPages = Math.ceil(totalItems / staffPageSize) || 1;
+      if (staffCurrentPage > totalPages) staffCurrentPage = totalPages;
+
+      const start = (staffCurrentPage - 1) * staffPageSize;
+      const pageItems = staffData.slice(start, start + staffPageSize);
+
+      pageItems.forEach(u => {
+        const tr = document.createElement('tr');
+        tr.className = 'hover:bg-slate-50/70 transition-colors';
+        const roleLabel = u.role === 'ADMIN' ? 'مدير عام (ADMIN)' : u.role === 'MANAGER' ? 'مشرف عمليات (MANAGER)' : u.role === 'SUPPORT' ? 'خدمة عملاء (SUPPORT)' : 'مخصص (CUSTOM)';
+        const roleColor = u.role === 'ADMIN' ? 'bg-purple-100 text-purple-800' : u.role === 'MANAGER' ? 'bg-blue-100 text-blue-800' : u.role === 'SUPPORT' ? 'bg-teal-100 text-teal-800' : 'bg-amber-100 text-amber-800';
+
+        const userPerms = (u.permissions && u.permissions.length > 0) ? u.permissions : (ROLE_PERMISSIONS_TEMPLATE[u.role] || []);
+        let permsHtml = '';
+        if (u.role === 'ADMIN') {
+          permsHtml = `<span class="px-2 py-0.5 rounded-md text-[10px] font-bold bg-purple-50 text-purple-700 border border-purple-200">كامل الصلاحيات (9 أقسام)</span>`;
+        } else {
+          permsHtml = `<div class="flex flex-wrap gap-1 max-w-xs">` +
+            userPerms.map(p => `<span class="px-1.5 py-0.5 rounded text-[9px] font-semibold bg-slate-100 text-slate-700 border border-slate-200">${MODULE_NAMES[p] || p}</span>`).join('') +
+            `</div>`;
+        }
+
+        tr.innerHTML = `
+          <td class="p-3">
+            <div class="font-bold text-slate-900">${u.full_name}</div>
+            <div class="text-[10px] text-slate-400 font-mono">${u.id.slice(0, 8)}...</div>
+          </td>
+          <td class="p-3 font-mono text-slate-600">${u.email}</td>
+          <td class="p-3"><span class="px-2.5 py-1 rounded-full text-[10px] font-bold ${roleColor}">${roleLabel}</span></td>
+          <td class="p-3">${permsHtml}</td>
+          <td class="p-3">${u.is_active ? '<span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-800">نشط</span>' : '<span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-slate-100 text-slate-500">معطل</span>'}</td>
+          <td class="p-3 text-slate-400 font-mono">${new Date(u.created_at).toLocaleDateString('ar-EG')}</td>
+          <td class="p-3 text-center">
+            <div class="flex items-center justify-center gap-2">
+              <button onclick="editStaff('${u.id}')" class="p-1.5 text-slate-400 hover:text-brand-600 rounded transition-colors cursor-pointer" title="تعديل الصلاحيات وبيانات المشرف"><i class="fa-solid fa-pen-to-square"></i></button>
+              ${u.email !== 'admin@zahra-store.com' ? `
+                <button onclick="confirmDeleteStaff('${u.id}', '${u.full_name}')" class="p-1.5 text-slate-400 hover:text-rose-600 rounded transition-colors cursor-pointer" title="حذف المشرف"><i class="fa-solid fa-trash-can"></i></button>
+              ` : '<span class="text-[10px] text-slate-400 font-bold">المدير الأساسي</span>'}
+            </div>
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+
+      renderPaginationBar({
+        containerId: 'staff-pagination',
+        currentPage: staffCurrentPage,
+        pageSize: staffPageSize,
+        totalItems: totalItems,
+        onPageChange: 'setStaffPage',
+        onPageSizeChange: 'setStaffPageSize',
+        allowedSizes: [10, 20, 50]
+      });
+    }
+
+    function setStaffPage(page) {
+      staffCurrentPage = page;
+      renderStaffTable();
+    }
+
+    function setStaffPageSize(size) {
+      staffPageSize = size;
+      staffCurrentPage = 1;
+      renderStaffTable();
     }
 
     // ── 10. PERMISSIONS REGISTRY MODULE ──
@@ -3736,11 +4132,19 @@
             </td>
           </tr>
         `;
+        renderPaginationBar({ containerId: 'coupons-pagination', currentPage: 1, pageSize: couponsPageSize, totalItems: 0 });
         return;
       }
 
+      const totalItems = couponsData.length;
+      const totalPages = Math.ceil(totalItems / couponsPageSize) || 1;
+      if (couponsCurrentPage > totalPages) couponsCurrentPage = totalPages;
+
+      const start = (couponsCurrentPage - 1) * couponsPageSize;
+      const pageItems = couponsData.slice(start, start + couponsPageSize);
+
       const now = new Date();
-      tbody.innerHTML = couponsData.map(c => {
+      tbody.innerHTML = pageItems.map(c => {
         const isExpired = c.end_date && new Date(c.end_date) < now;
         const discountBadge = c.discount_type === 'percentage'
           ? `<span class="px-2.5 py-1 rounded-lg text-xs font-bold bg-purple-50 text-purple-700 border border-purple-200">${c.discount_value}% خصم</span>`
@@ -3795,6 +4199,27 @@
           </tr>
         `;
       }).join('');
+
+      renderPaginationBar({
+        containerId: 'coupons-pagination',
+        currentPage: couponsCurrentPage,
+        pageSize: couponsPageSize,
+        totalItems: totalItems,
+        onPageChange: 'setCouponsPage',
+        onPageSizeChange: 'setCouponsPageSize',
+        allowedSizes: [10, 20, 50]
+      });
+    }
+
+    function setCouponsPage(page) {
+      couponsCurrentPage = page;
+      renderCouponsTable();
+    }
+
+    function setCouponsPageSize(size) {
+      couponsPageSize = size;
+      couponsCurrentPage = 1;
+      renderCouponsTable();
     }
 
     function onCouponTypeChange() {

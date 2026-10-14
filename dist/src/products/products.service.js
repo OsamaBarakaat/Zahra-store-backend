@@ -244,12 +244,10 @@ let ProductsService = class ProductsService {
                     take,
                     skip,
                 });
-                if (products.length > 0) {
-                    return products.map((p) => this.mapPrismaProduct(p));
-                }
+                return products.map((p) => this.mapPrismaProduct(p));
             }
             catch (err) {
-                console.warn('Prisma error in findAll products:', err.message);
+                console.warn('Prisma error in findAll products:', err?.message);
             }
         }
         let list = [...MOCK_PRODUCTS];

@@ -234,11 +234,9 @@ export class ProductsService {
           skip,
         });
 
-        if (products.length > 0) {
-          return products.map((p) => this.mapPrismaProduct(p));
-        }
-      } catch (err) {
-        console.warn('Prisma error in findAll products:', err.message);
+        return products.map((p) => this.mapPrismaProduct(p));
+      } catch (err: any) {
+        console.warn('Prisma error in findAll products:', err?.message);
       }
     }
 

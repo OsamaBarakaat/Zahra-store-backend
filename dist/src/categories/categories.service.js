@@ -115,25 +115,23 @@ let CategoriesService = class CategoriesService {
                         },
                     },
                 });
-                if (categories.length > 0) {
-                    return categories.map((cat) => ({
-                        id: cat.id,
-                        slug: cat.slug,
-                        name: cat.name_ar,
-                        name_ar: cat.name_ar,
-                        description: cat.description || '',
-                        image: cat.image_url || '',
-                        image_url: cat.image_url || '',
-                        productCount: cat._count.products,
-                        featured: cat.is_featured,
-                        is_featured: cat.is_featured,
-                        sort_order: cat.sort_order,
-                        is_active: cat.is_active,
-                    }));
-                }
+                return categories.map((cat) => ({
+                    id: cat.id,
+                    slug: cat.slug,
+                    name: cat.name_ar,
+                    name_ar: cat.name_ar,
+                    description: cat.description || '',
+                    image: cat.image_url || '',
+                    image_url: cat.image_url || '',
+                    productCount: cat._count.products,
+                    featured: cat.is_featured,
+                    is_featured: cat.is_featured,
+                    sort_order: cat.sort_order,
+                    is_active: cat.is_active,
+                }));
             }
             catch (err) {
-                console.warn('Prisma error in findAll categories:', err.message);
+                console.warn('Prisma error in findAll categories:', err?.message);
             }
         }
         return MOCK_CATEGORIES;

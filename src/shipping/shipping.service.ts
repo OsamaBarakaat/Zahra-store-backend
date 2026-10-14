@@ -42,17 +42,15 @@ export class ShippingService {
         const zones = await this.prisma.shippingZone.findMany({
           orderBy: { governorate_name_ar: 'asc' },
         });
-        if (zones.length > 0) {
-          return zones.map((z) => ({
-            id: z.id,
-            governorate_name_ar: z.governorate_name_ar,
-            shipping_fee: Number(z.shipping_fee),
-            estimated_days: z.estimated_days,
-            is_active: z.is_active,
-          }));
-        }
-      } catch (err) {
-        console.warn('Prisma error in findAllZones:', err.message);
+        return zones.map((z) => ({
+          id: z.id,
+          governorate_name_ar: z.governorate_name_ar,
+          shipping_fee: Number(z.shipping_fee),
+          estimated_days: z.estimated_days,
+          is_active: z.is_active,
+        }));
+      } catch (err: any) {
+        console.warn('Prisma error in findAllZones:', err?.message);
       }
     }
 
