@@ -152,6 +152,16 @@ export class CreateOrderDto {
   @IsNumber()
   discount?: number;
 
+  @ApiPropertyOptional({ example: 0, default: 0, description: 'قيمة الخصم على الشحن (50% عند الدفع الإلكتروني)' })
+  @IsOptional()
+  @IsNumber()
+  shippingDiscount?: number;
+
+  @ApiPropertyOptional({ example: 'ZAHRA10', description: 'كود الخصم المستخدم' })
+  @IsOptional()
+  @IsString()
+  couponCode?: string;
+
   @ApiProperty({ example: 390 })
   @IsNumber()
   total: number;

@@ -32,5 +32,7 @@ export declare class CreateOrderDto {
     subtotal: number;
     shippingCost: number;
     discount?: number;
+    shippingDiscount?: number;
+    couponCode?: string;
     total: number;
 }

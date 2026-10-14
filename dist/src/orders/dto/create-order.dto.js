@@ -166,6 +166,8 @@ class CreateOrderDto {
     subtotal;
     shippingCost;
     discount;
+    shippingDiscount;
+    couponCode;
     total;
 }
 exports.CreateOrderDto = CreateOrderDto;
@@ -215,6 +217,18 @@ __decorate([
     (0, class_validator_1.IsNumber)(),
     __metadata("design:type", Number)
 ], CreateOrderDto.prototype, "discount", void 0);
+__decorate([
+    (0, swagger_1.ApiPropertyOptional)({ example: 0, default: 0, description: 'قيمة الخصم على الشحن (50% عند الدفع الإلكتروني)' }),
+    (0, class_validator_1.IsOptional)(),
+    (0, class_validator_1.IsNumber)(),
+    __metadata("design:type", Number)
+], CreateOrderDto.prototype, "shippingDiscount", void 0);
+__decorate([
+    (0, swagger_1.ApiPropertyOptional)({ example: 'ZAHRA10', description: 'كود الخصم المستخدم' }),
+    (0, class_validator_1.IsOptional)(),
+    (0, class_validator_1.IsString)(),
+    __metadata("design:type", String)
+], CreateOrderDto.prototype, "couponCode", void 0);
 __decorate([
     (0, swagger_1.ApiProperty)({ example: 390 }),
     (0, class_validator_1.IsNumber)(),

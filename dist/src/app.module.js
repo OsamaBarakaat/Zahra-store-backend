@@ -60,6 +60,7 @@ const admin_module_1 = require("./admin/admin.module");
 const customers_module_1 = require("./customers/customers.module");
 const expenses_module_1 = require("./expenses/expenses.module");
 const permissions_module_1 = require("./permissions/permissions.module");
+const coupons_module_1 = require("./coupons/coupons.module");
 const uploadsPath = path.resolve(process.cwd(), 'uploads');
 const publicPath = path.resolve(process.cwd(), 'public');
 let AppModule = class AppModule {
@@ -92,6 +93,7 @@ exports.AppModule = AppModule = __decorate([
             customers_module_1.CustomersModule,
             expenses_module_1.ExpensesModule,
             permissions_module_1.PermissionsModule,
+            coupons_module_1.CouponsModule,
         ],
         controllers: [app_controller_1.AppController],
         providers: [app_service_1.AppService],

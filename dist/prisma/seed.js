@@ -464,6 +464,33 @@ async function main() {
             ],
         });
     }
+    await prisma.coupon.upsert({
+        where: { code: 'ZAHRA10' },
+        update: { is_active: true },
+        create: {
+            code: 'ZAHRA10',
+            discount_type: 'percentage',
+            discount_value: 10,
+            min_order_amount: 100,
+            max_discount_amount: 500,
+            start_date: new Date(),
+            end_date: new Date('2027-12-31T23:59:59.000Z'),
+            usage_limit: 1000,
+            used_count: 0,
+            is_active: true,
+        },
+    });
+    await prisma.permission.upsert({
+        where: { key: 'coupons' },
+        update: {},
+        create: {
+            key: 'coupons',
+            name_ar: 'كوبونات الخصم',
+            description: 'إدارة وتفعيل أكواد وقسائم الخصم وتحديد نسبتها وصلاحيتها',
+            module: 'coupons',
+            icon: 'fa-ticket',
+        },
+    });
     console.log('✅ Database seeding finished successfully!');
 }
 main()

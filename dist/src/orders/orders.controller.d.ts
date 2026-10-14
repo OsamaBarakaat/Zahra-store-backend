@@ -69,6 +69,8 @@ export declare class OrdersController {
         subtotal: number;
         shippingCost: number;
         discount: number;
+        shippingDiscount: number;
+        couponCode: any;
         total: number;
         status: any;
         createdAt: any;
@@ -100,6 +102,8 @@ export declare class OrdersController {
             subtotal: number;
             shippingCost: number;
             discount: number;
+            shippingDiscount: number;
+            couponCode: any;
             total: number;
             status: any;
             createdAt: any;
@@ -169,6 +173,8 @@ export declare class OrdersController {
         subtotal: number;
         shippingCost: number;
         discount: number;
+        shippingDiscount: number;
+        couponCode: any;
         total: number;
         status: any;
         createdAt: any;
@@ -237,6 +243,8 @@ export declare class OrdersController {
         subtotal: number;
         shippingCost: number;
         discount: number;
+        shippingDiscount: number;
+        couponCode: any;
         total: number;
         status: any;
         createdAt: any;
@@ -301,6 +309,8 @@ export declare class OrdersController {
         customer_email: string | null;
         street_address: string;
         shipping_cost: import("@prisma/client/runtime/library").Decimal;
+        shipping_discount: import("@prisma/client/runtime/library").Decimal;
+        coupon_code: string | null;
         total_amount: import("@prisma/client/runtime/library").Decimal;
         payment_method: string;
         payment_reference: string | null;

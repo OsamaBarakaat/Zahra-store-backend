@@ -201,7 +201,7 @@
           </div>
         </button>
 
-        <button onclick="switchTab('shipping')" id="tab-btn-shipping" class="w-full flex items-center justify-between px-3 py-2.5 rounded-xl font-medium text-sm transition-all text-slate-600 hover:bg-slate-50">
+        <button onclick="switchTab('shipping')" id="tab-btn-shipping" class="w-full flex items-center justify-between px-3 py-2.5 rounded-xl font-medium text-sm transition-all text-slate-600 hover:bg-slate-50 cursor-pointer">
           <div class="flex items-center gap-3">
             <i class="fa-solid fa-truck-fast w-5 text-center text-slate-400"></i>
             <span>الشحن والمحافظات</span>
@@ -209,7 +209,15 @@
           <span class="bg-slate-100 text-slate-600 text-[11px] font-bold px-2 py-0.5 rounded-full">27</span>
         </button>
 
-        <button onclick="switchTab('staff')" id="tab-btn-staff" class="w-full flex items-center justify-between px-3 py-2.5 rounded-xl font-medium text-sm transition-all text-slate-600 hover:bg-slate-50">
+        <button onclick="switchTab('coupons')" id="tab-btn-coupons" class="w-full flex items-center justify-between px-3 py-2.5 rounded-xl font-medium text-sm transition-all text-slate-600 hover:bg-slate-50 cursor-pointer">
+          <div class="flex items-center gap-3">
+            <i class="fa-solid fa-ticket w-5 text-center text-slate-400"></i>
+            <span>كوبونات الخصم</span>
+          </div>
+          <span id="badge-coupons-count" class="bg-indigo-50 text-indigo-700 text-[11px] font-bold px-2 py-0.5 rounded-full">0</span>
+        </button>
+
+        <button onclick="switchTab('staff')" id="tab-btn-staff" class="w-full flex items-center justify-between px-3 py-2.5 rounded-xl font-medium text-sm transition-all text-slate-600 hover:bg-slate-50 cursor-pointer">
           <div class="flex items-center gap-3">
             <i class="fa-solid fa-user-shield w-5 text-center text-slate-400"></i>
             <span>المشرفين والصلاحيات</span>
@@ -735,6 +743,98 @@
         </div>
       </section>
 
+      <!-- ════ 10. COUPONS PANEL (أكواد وقسائم الخصم) ════ -->
+      <section id="panel-coupons" class="space-y-6 hidden">
+        <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex flex-col sm:flex-row items-center justify-between gap-4">
+          <div>
+            <h2 class="font-bold text-slate-900 text-lg flex items-center gap-2">
+              <i class="fa-solid fa-ticket text-brand-600"></i>
+              <span>إدارة كوبونات وأكواد الخصم والعروض</span>
+            </h2>
+            <p class="text-xs text-slate-500 mt-1">إنشاء وإدارة أكواد الخصم وتحديد نسبتها وصلاحيتها وشروط الحد الأدنى للطلب</p>
+          </div>
+          <button onclick="openCouponModal()" class="px-5 py-2.5 bg-brand-600 hover:bg-brand-700 text-white rounded-xl text-xs font-bold shadow-md shadow-brand-600/20 transition-all flex items-center gap-2 cursor-pointer">
+            <i class="fa-solid fa-plus"></i>
+            إضافة كود خصم جديد
+          </button>
+        </div>
+
+        <!-- 4 Stats Cards -->
+        <div class="grid grid-cols-2 sm:grid-cols-4 gap-4">
+          <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex items-center justify-between">
+            <div>
+              <div class="text-[11px] font-bold text-slate-400">إجمالي الكوبونات</div>
+              <div class="text-xl font-black text-slate-900 mt-1" id="stat-coupons-total">0</div>
+            </div>
+            <div class="w-10 h-10 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center text-lg">
+              <i class="fa-solid fa-ticket"></i>
+            </div>
+          </div>
+
+          <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex items-center justify-between">
+            <div>
+              <div class="text-[11px] font-bold text-slate-400">الكوبونات النشطة</div>
+              <div class="text-xl font-black text-emerald-600 mt-1" id="stat-coupons-active">0</div>
+            </div>
+            <div class="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center text-lg">
+              <i class="fa-solid fa-circle-check"></i>
+            </div>
+          </div>
+
+          <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex items-center justify-between">
+            <div>
+              <div class="text-[11px] font-bold text-slate-400">مرات الاستخدام</div>
+              <div class="text-xl font-black text-blue-600 mt-1" id="stat-coupons-uses">0</div>
+            </div>
+            <div class="w-10 h-10 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center text-lg">
+              <i class="fa-solid fa-users"></i>
+            </div>
+          </div>
+
+          <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex items-center justify-between">
+            <div>
+              <div class="text-[11px] font-bold text-slate-400">كوبونات منتهية</div>
+              <div class="text-xl font-black text-rose-500 mt-1" id="stat-coupons-expired">0</div>
+            </div>
+            <div class="w-10 h-10 rounded-xl bg-rose-50 text-rose-600 flex items-center justify-center text-lg">
+              <i class="fa-solid fa-calendar-xmark"></i>
+            </div>
+          </div>
+        </div>
+
+        <!-- Coupons Table -->
+        <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+          <div class="p-4 border-b border-slate-100 flex items-center justify-between gap-4">
+            <div class="font-bold text-slate-800 text-sm">قائمة أكواد الخصم</div>
+            <div class="flex items-center gap-2">
+              <button onclick="loadCoupons()" class="text-slate-500 hover:text-slate-800 text-xs px-3 py-1.5 rounded-lg border border-slate-200 flex items-center gap-1.5 cursor-pointer">
+                <i class="fa-solid fa-arrows-rotate"></i>
+                تحديث
+              </button>
+            </div>
+          </div>
+          <div class="overflow-x-auto">
+            <table class="w-full text-right text-xs">
+              <thead class="bg-slate-50 text-slate-500 font-bold border-b border-slate-100">
+                <tr>
+                  <th class="p-3">كود الخصم</th>
+                  <th class="p-3">نوع وقيمة الخصم</th>
+                  <th class="p-3">شروط الطلب</th>
+                  <th class="p-3">الحد الأقصى للخصم</th>
+                  <th class="p-3">فترة الصلاحية</th>
+                  <th class="p-3">الاستخدام</th>
+                  <th class="p-3">الحالة</th>
+                  <th class="p-3 text-center">إجراءات</th>
+                </tr>
+              </thead>
+              <tbody id="coupons-table-tbody" class="divide-y divide-slate-100 text-slate-700">
+                <!-- populated by JS -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
     </main>
   </div>
 
@@ -1216,6 +1316,86 @@
     </div>
   </div>
 
+  <!-- 11. COUPON (Add / Edit) MODAL -->
+  <div id="couponModal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+    <div class="bg-white rounded-2xl max-w-lg w-full p-6 shadow-xl text-right max-h-[90vh] overflow-y-auto">
+      <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+        <h3 class="font-bold text-base text-slate-900" id="couponModalTitle">إضافة كود خصم جديد</h3>
+        <button onclick="closeCouponModal()" class="text-slate-400 hover:text-slate-600 p-2 text-base cursor-pointer"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+
+      <form id="couponForm" onsubmit="handleCouponSubmit(event)" class="mt-4 space-y-4 text-xs">
+        <input type="hidden" id="couponEditId" value="" />
+        
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div>
+            <label class="block font-bold text-slate-700 mb-1">كود الخصم (Promo Code) *</label>
+            <input type="text" id="couponCode" required placeholder="مثال: ZAHRA10 أو SUMMER50" class="w-full bg-slate-50 border border-slate-200 rounded-xl p-2.5 focus:border-brand-500 focus:outline-none font-mono uppercase text-left font-bold" />
+            <span class="text-[10px] text-slate-400">حروف إنجليزية وأرقام بدون مسافات</span>
+          </div>
+
+          <div>
+            <label class="block font-bold text-slate-700 mb-1">نوع الخصم *</label>
+            <select id="couponDiscountType" required onchange="onCouponTypeChange()" class="w-full bg-slate-50 border border-slate-200 rounded-xl p-2.5 focus:border-brand-500 focus:outline-none font-semibold">
+              <option value="percentage">نسبة مئوية (%)</option>
+              <option value="fixed">مبلغ ثابت (جنيه مصري)</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div>
+            <label class="block font-bold text-slate-700 mb-1" id="couponValueLabel">قيمة الخصم (%) *</label>
+            <input type="number" id="couponDiscountValue" required min="0.1" step="0.5" placeholder="10" class="w-full bg-slate-50 border border-slate-200 rounded-xl p-2.5 focus:border-brand-500 focus:outline-none font-bold" />
+          </div>
+
+          <div>
+            <label class="block font-bold text-slate-700 mb-1">الحد الأدنى للطلب (ج.م)</label>
+            <input type="number" id="couponMinOrder" min="0" placeholder="0 أو اتركه فارغاً" class="w-full bg-slate-50 border border-slate-200 rounded-xl p-2.5 focus:border-brand-500 focus:outline-none" />
+            <span class="text-[10px] text-slate-400">الحد الأدنى لقيمة السلة لتفعيل الكود</span>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div id="couponMaxDiscountWrap">
+            <label class="block font-bold text-slate-700 mb-1">الحد الأقصى للخصم (ج.م)</label>
+            <input type="number" id="couponMaxDiscount" min="0" placeholder="اختياري (سقف للخصم)" class="w-full bg-slate-50 border border-slate-200 rounded-xl p-2.5 focus:border-brand-500 focus:outline-none" />
+          </div>
+
+          <div>
+            <label class="block font-bold text-slate-700 mb-1">حد الاستخدام الإجمالي (عدد المرات)</label>
+            <input type="number" id="couponUsageLimit" min="1" placeholder="مثال: 500 مرة (أو فارغ لغير محدود)" class="w-full bg-slate-50 border border-slate-200 rounded-xl p-2.5 focus:border-brand-500 focus:outline-none" />
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div>
+            <label class="block font-bold text-slate-700 mb-1">تاريخ ووقت البدء</label>
+            <input type="datetime-local" id="couponStartDate" class="w-full bg-slate-50 border border-slate-200 rounded-xl p-2.5 focus:border-brand-500 focus:outline-none text-left" />
+          </div>
+
+          <div>
+            <label class="block font-bold text-slate-700 mb-1">تاريخ ووقت انتهاء الصلاحية</label>
+            <input type="datetime-local" id="couponEndDate" class="w-full bg-slate-50 border border-slate-200 rounded-xl p-2.5 focus:border-brand-500 focus:outline-none text-left" />
+            <span class="text-[10px] text-slate-400">اتركه فارغاً إذا كان الكود دائم الصلاحية</span>
+          </div>
+        </div>
+
+        <div class="pt-2">
+          <label class="flex items-center gap-2 cursor-pointer select-none">
+            <input type="checkbox" id="couponIsActive" checked class="w-4 h-4 text-brand-600 rounded border-slate-300 focus:ring-brand-500" />
+            <span class="font-bold text-slate-800">تفعيل كود الخصم فوراً</span>
+          </label>
+        </div>
+
+        <div class="mt-6 flex items-center justify-end gap-3 pt-4 border-t border-slate-100">
+          <button type="button" onclick="closeCouponModal()" class="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl font-bold cursor-pointer">إلغاء</button>
+          <button type="submit" id="couponSubmitBtn" class="px-5 py-2 bg-brand-600 hover:bg-brand-700 text-white rounded-xl font-bold shadow-sm cursor-pointer">حفظ كود الخصم</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
   <!-- Toast Notification -->
   <div id="toast" class="fixed bottom-6 left-6 z-[110] bg-slate-900 text-white text-xs px-4 py-3 rounded-xl shadow-xl flex items-center gap-3 transition-transform duration-300 translate-y-24 opacity-0 pointer-events-none">
     <i id="toastIcon" class="fa-solid fa-circle-check text-emerald-400"></i>
@@ -1234,13 +1414,14 @@
     let customersData = [];
     let expensesData = [];
     let staffData = [];
+    let couponsData = [];
     let systemPermissions = [];
     let currentViewingOrderId = null;
     let salesChartInstance = null;
     let pendingDeleteCallback = null;
 
     // Module Definitions & Default Role Templates
-    const ALL_MODULES_KEYS = ['overview', 'products', 'categories', 'orders', 'custom_chairs', 'customers', 'expenses', 'shipping', 'staff'];
+    const ALL_MODULES_KEYS = ['overview', 'products', 'categories', 'orders', 'custom_chairs', 'customers', 'expenses', 'shipping', 'coupons', 'staff'];
     const MODULE_NAMES = {
       overview: 'نظرة عامة',
       products: 'المنتجات',
@@ -1250,12 +1431,13 @@
       customers: 'العملاء CRM',
       expenses: 'المالية والأرباح',
       shipping: 'الشحن',
+      coupons: 'كوبونات الخصم',
       staff: 'المشرفين والصلاحيات'
     };
 
     const ROLE_PERMISSIONS_TEMPLATE = {
-      ADMIN: ['overview', 'products', 'categories', 'orders', 'custom_chairs', 'customers', 'expenses', 'shipping', 'staff'],
-      MANAGER: ['overview', 'products', 'categories', 'orders', 'custom_chairs', 'customers', 'shipping'],
+      ADMIN: ['overview', 'products', 'categories', 'orders', 'custom_chairs', 'customers', 'expenses', 'shipping', 'coupons', 'staff'],
+      MANAGER: ['overview', 'products', 'categories', 'orders', 'custom_chairs', 'customers', 'shipping', 'coupons'],
       SUPPORT: ['overview', 'orders', 'custom_chairs'],
       CUSTOM: []
     };
@@ -1269,6 +1451,7 @@
       { mod: 'customers', tab: 'customers', btn: 'tab-btn-customers', panel: 'panel-customers' },
       { mod: 'expenses', tab: 'expenses', btn: 'tab-btn-expenses', panel: 'panel-expenses' },
       { mod: 'shipping', tab: 'shipping', btn: 'tab-btn-shipping', panel: 'panel-shipping' },
+      { mod: 'coupons', tab: 'coupons', btn: 'tab-btn-coupons', panel: 'panel-coupons' },
       { mod: 'staff', tab: 'staff', btn: 'tab-btn-staff', panel: 'panel-staff' },
     ];
 
@@ -1488,6 +1671,7 @@
       else if (tabId === 'customers') loadCustomers();
       else if (tabId === 'expenses') loadExpenses();
       else if (tabId === 'shipping') loadShippingZones();
+      else if (tabId === 'coupons') loadCoupons();
       else if (tabId === 'staff') loadStaffUsers();
     }
 
@@ -3034,6 +3218,287 @@
           }
         }
       );
+    }
+
+    // ── 10. COUPONS & PROMO CODES MANAGEMENT ──
+    async function loadCoupons() {
+      try {
+        const res = await fetch(`${API_BASE}/coupons`, { headers: getHeaders() });
+        if (!res.ok) return;
+        couponsData = await res.json();
+
+        // Update Stats Cards
+        const total = couponsData.length;
+        const now = new Date();
+        const active = couponsData.filter(c => c.is_active && (!c.end_date || new Date(c.end_date) >= now)).length;
+        const uses = couponsData.reduce((acc, c) => acc + (c.used_count || 0), 0);
+        const expired = couponsData.filter(c => c.end_date && new Date(c.end_date) < now).length;
+
+        const statTotal = document.getElementById('stat-coupons-total');
+        if (statTotal) statTotal.textContent = total;
+        const statActive = document.getElementById('stat-coupons-active');
+        if (statActive) statActive.textContent = active;
+        const statUses = document.getElementById('stat-coupons-uses');
+        if (statUses) statUses.textContent = uses;
+        const statExpired = document.getElementById('stat-coupons-expired');
+        if (statExpired) statExpired.textContent = expired;
+
+        // Update Sidebar Badge
+        const badgeCoupons = document.getElementById('badge-coupons-count');
+        if (badgeCoupons) badgeCoupons.textContent = active;
+
+        renderCouponsTable();
+      } catch (err) {
+        console.error('Failed to load coupons:', err);
+      }
+    }
+
+    function renderCouponsTable() {
+      const tbody = document.getElementById('coupons-table-tbody');
+      if (!tbody) return;
+
+      if (!couponsData || couponsData.length === 0) {
+        tbody.innerHTML = `
+          <tr>
+            <td colspan="8" class="text-center py-8 text-slate-400">
+              <i class="fa-solid fa-ticket text-3xl mb-2 block opacity-40"></i>
+              لا توجد أي أكواد خصم مسجلة حتى الآن. اضغط على "إضافة كود خصم جديد" لإنشاء أول كوبون.
+            </td>
+          </tr>
+        `;
+        return;
+      }
+
+      const now = new Date();
+      tbody.innerHTML = couponsData.map(c => {
+        const isExpired = c.end_date && new Date(c.end_date) < now;
+        const discountBadge = c.discount_type === 'percentage'
+          ? `<span class="px-2.5 py-1 rounded-lg text-xs font-bold bg-purple-50 text-purple-700 border border-purple-200">${c.discount_value}% خصم</span>`
+          : `<span class="px-2.5 py-1 rounded-lg text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">${c.discount_value} ج.م خصم</span>`;
+
+        let expiryBadge = '';
+        if (isExpired) {
+          const expDate = new Date(c.end_date).toLocaleDateString('ar-EG');
+          expiryBadge = `<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-rose-50 text-rose-700 border border-rose-200"><i class="fa-solid fa-circle-xmark"></i> منتهي (${expDate})</span>`;
+        } else if (c.end_date) {
+          const expDate = new Date(c.end_date).toLocaleDateString('ar-EG');
+          expiryBadge = `<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200"><i class="fa-solid fa-clock"></i> ساري حتى ${expDate}</span>`;
+        } else {
+          expiryBadge = `<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-slate-100 text-slate-600"><i class="fa-solid fa-infinity"></i> دائم / بدون انتهاء</span>`;
+        }
+
+        const usageText = `${c.used_count || 0} / ${c.usage_limit ? c.usage_limit : 'غير محدود'}`;
+        const minOrderText = c.min_order_amount ? `${Number(c.min_order_amount).toLocaleString()} ج.م` : '<span class="text-slate-400">بدون حد أدنى</span>';
+        const maxDiscountText = c.max_discount_amount ? `${Number(c.max_discount_amount).toLocaleString()} ج.م` : '<span class="text-slate-400">—</span>';
+
+        return `
+          <tr class="hover:bg-slate-50 transition-colors">
+            <td class="p-3">
+              <div class="flex items-center gap-2">
+                <span class="font-mono font-black text-sm bg-indigo-50 text-indigo-700 px-2.5 py-1 rounded-lg border border-indigo-200 select-all tracking-wider">${c.code}</span>
+                <button onclick="copyCouponCode('${c.code}')" title="نسخ الكود" class="w-7 h-7 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-600 flex items-center justify-center text-xs transition-colors cursor-pointer">
+                  <i class="fa-regular fa-copy"></i>
+                </button>
+              </div>
+            </td>
+            <td class="p-3 font-semibold">${discountBadge}</td>
+            <td class="p-3 font-medium">${minOrderText}</td>
+            <td class="p-3 font-medium">${maxDiscountText}</td>
+            <td class="p-3">${expiryBadge}</td>
+            <td class="p-3 font-mono text-xs">${usageText}</td>
+            <td class="p-3">
+              <button onclick="toggleCouponStatus('${c.id}')" class="px-2.5 py-1 rounded-full text-[11px] font-bold transition-all cursor-pointer flex items-center gap-1.5 ${c.is_active ? 'bg-emerald-100 text-emerald-800 hover:bg-emerald-200' : 'bg-slate-200 text-slate-600 hover:bg-slate-300'}">
+                <span class="w-1.5 h-1.5 rounded-full ${c.is_active ? 'bg-emerald-600' : 'bg-slate-500'}"></span>
+                ${c.is_active ? 'مفعّل' : 'معطّل'}
+              </button>
+            </td>
+            <td class="p-3 text-center">
+              <div class="flex items-center justify-center gap-1.5">
+                <button onclick="editCoupon('${c.id}')" title="تعديل الكوبون" class="w-7 h-7 rounded-lg bg-slate-100 hover:bg-brand-50 hover:text-brand-600 text-slate-600 flex items-center justify-center text-xs transition-colors cursor-pointer">
+                  <i class="fa-solid fa-pen-to-square"></i>
+                </button>
+                <button onclick="confirmDeleteCoupon('${c.id}', '${c.code}')" title="حذف الكوبون" class="w-7 h-7 rounded-lg bg-slate-100 hover:bg-rose-50 hover:text-rose-600 text-slate-600 flex items-center justify-center text-xs transition-colors cursor-pointer">
+                  <i class="fa-solid fa-trash-can"></i>
+                </button>
+              </div>
+            </td>
+          </tr>
+        `;
+      }).join('');
+    }
+
+    function onCouponTypeChange() {
+      const type = document.getElementById('couponDiscountType').value;
+      const valLabel = document.getElementById('couponValueLabel');
+      const maxWrap = document.getElementById('couponMaxDiscountWrap');
+      if (type === 'percentage') {
+        valLabel.textContent = 'قيمة الخصم (%) *';
+        maxWrap.classList.remove('hidden');
+      } else {
+        valLabel.textContent = 'قيمة الخصم (جنيه مصري) *';
+        maxWrap.classList.add('hidden');
+      }
+    }
+
+    function openCouponModal() {
+      document.getElementById('couponForm').reset();
+      document.getElementById('couponEditId').value = '';
+      document.getElementById('couponCode').disabled = false;
+      document.getElementById('couponModalTitle').textContent = 'إضافة كود خصم جديد';
+      document.getElementById('couponSubmitBtn').textContent = 'حفظ كود الخصم';
+      document.getElementById('couponDiscountType').value = 'percentage';
+      document.getElementById('couponIsActive').checked = true;
+
+      // Default start date = today
+      const now = new Date();
+      now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
+      document.getElementById('couponStartDate').value = now.toISOString().slice(0, 16);
+
+      onCouponTypeChange();
+      document.getElementById('couponModal').classList.remove('hidden');
+    }
+
+    function editCoupon(id) {
+      const c = couponsData.find(item => item.id === id);
+      if (!c) return;
+
+      document.getElementById('couponForm').reset();
+      document.getElementById('couponEditId').value = c.id;
+      document.getElementById('couponCode').value = c.code;
+      document.getElementById('couponCode').disabled = true; // Code cannot be changed once created
+      document.getElementById('couponDiscountType').value = c.discount_type;
+      document.getElementById('couponDiscountValue').value = c.discount_value;
+      document.getElementById('couponMinOrder').value = c.min_order_amount || '';
+      document.getElementById('couponMaxDiscount').value = c.max_discount_amount || '';
+      document.getElementById('couponUsageLimit').value = c.usage_limit || '';
+
+      if (c.start_date) {
+        const sd = new Date(c.start_date);
+        sd.setMinutes(sd.getMinutes() - sd.getTimezoneOffset());
+        document.getElementById('couponStartDate').value = sd.toISOString().slice(0, 16);
+      } else {
+        document.getElementById('couponStartDate').value = '';
+      }
+
+      if (c.end_date) {
+        const ed = new Date(c.end_date);
+        ed.setMinutes(ed.getMinutes() - ed.getTimezoneOffset());
+        document.getElementById('couponEndDate').value = ed.toISOString().slice(0, 16);
+      } else {
+        document.getElementById('couponEndDate').value = '';
+      }
+
+      document.getElementById('couponIsActive').checked = c.is_active;
+
+      document.getElementById('couponModalTitle').textContent = `تعديل كود الخصم: ${c.code}`;
+      document.getElementById('couponSubmitBtn').textContent = 'حفظ التعديلات';
+      onCouponTypeChange();
+      document.getElementById('couponModal').classList.remove('hidden');
+    }
+
+    function closeCouponModal() {
+      document.getElementById('couponModal').classList.add('hidden');
+    }
+
+    async function handleCouponSubmit(e) {
+      e.preventDefault();
+      const editId = document.getElementById('couponEditId').value;
+      const code = document.getElementById('couponCode').value.trim().toUpperCase();
+      const discountType = document.getElementById('couponDiscountType').value;
+      const discountValue = parseFloat(document.getElementById('couponDiscountValue').value);
+      const minOrder = document.getElementById('couponMinOrder').value ? parseFloat(document.getElementById('couponMinOrder').value) : null;
+      const maxDiscount = document.getElementById('couponMaxDiscount').value ? parseFloat(document.getElementById('couponMaxDiscount').value) : null;
+      const usageLimit = document.getElementById('couponUsageLimit').value ? parseInt(document.getElementById('couponUsageLimit').value, 10) : null;
+      const startDateVal = document.getElementById('couponStartDate').value;
+      const endDateVal = document.getElementById('couponEndDate').value;
+      const isActive = document.getElementById('couponIsActive').checked;
+
+      const payload = {
+        discount_type: discountType,
+        discount_value: discountValue,
+        min_order_amount: minOrder,
+        max_discount_amount: maxDiscount,
+        usage_limit: usageLimit,
+        start_date: startDateVal ? new Date(startDateVal).toISOString() : new Date().toISOString(),
+        end_date: endDateVal ? new Date(endDateVal).toISOString() : null,
+        is_active: isActive,
+      };
+
+      if (!editId) {
+        payload.code = code;
+      }
+
+      try {
+        const url = editId ? `${API_BASE}/coupons/${editId}` : `${API_BASE}/coupons`;
+        const method = editId ? 'PUT' : 'POST';
+        const res = await fetch(url, {
+          method,
+          headers: getHeaders(),
+          body: JSON.stringify(payload),
+        });
+
+        if (res.ok) {
+          showToast(editId ? `تم تعديل كود الخصم ${code} بنجاح` : `تم إنشاء كود الخصم ${code} بنجاح`);
+          closeCouponModal();
+          loadCoupons();
+        } else {
+          const err = await res.json();
+          showToast(`خطأ: ${err.message || 'فشلت عملية حفظ الكوبون'}`, 'error');
+        }
+      } catch (err) {
+        showToast('حدث خطأ أثناء حفظ كود الخصم', 'error');
+      }
+    }
+
+    async function toggleCouponStatus(id) {
+      try {
+        const res = await fetch(`${API_BASE}/coupons/${id}/toggle`, {
+          method: 'PATCH',
+          headers: getHeaders(),
+        });
+        if (res.ok) {
+          const updated = await res.json();
+          showToast(`تم ${updated.is_active ? 'تفعيل' : 'تعطيل'} كود الخصم ${updated.code} بنجاح`);
+          loadCoupons();
+        } else {
+          showToast('فشل تغيير حالة الكود', 'error');
+        }
+      } catch (e) {
+        showToast('حدث خطأ أثناء تغيير حالة الكود', 'error');
+      }
+    }
+
+    function confirmDeleteCoupon(id, code) {
+      openDeleteModal(
+        `حذف كود الخصم: ${code}`,
+        `هل أنت متأكد من رغبتك في حذف كود الخصم "${code}" نهائياً من قاعدة البيانات؟`,
+        async () => {
+          try {
+            const res = await fetch(`${API_BASE}/coupons/${id}`, {
+              method: 'DELETE',
+              headers: getHeaders(),
+            });
+            if (res.ok) {
+              showToast(`تم حذف كود الخصم "${code}" بنجاح`);
+              loadCoupons();
+            } else {
+              showToast('فشل حذف كود الخصم', 'error');
+            }
+          } catch (e) {
+            showToast('حدث خطأ أثناء حذف الكوبون', 'error');
+          }
+        }
+      );
+    }
+
+    function copyCouponCode(code) {
+      if (navigator.clipboard) {
+        navigator.clipboard.writeText(code).then(() => {
+          showToast(`تم نسخ الكود: ${code} بنجاح`);
+        });
+      } else {
+        showToast(`كود الخصم: ${code}`);
+      }
     }
 
     // App Initialization

@@ -20,6 +20,7 @@ import { AdminModule } from './admin/admin.module';
 import { CustomersModule } from './customers/customers.module';
 import { ExpensesModule } from './expenses/expenses.module';
 import { PermissionsModule } from './permissions/permissions.module';
+import { CouponsModule } from './coupons/coupons.module';
 
 const uploadsPath = path.resolve(process.cwd(), 'uploads');
 const publicPath = path.resolve(process.cwd(), 'public');
@@ -53,6 +54,7 @@ const publicPath = path.resolve(process.cwd(), 'public');
     CustomersModule,
     ExpensesModule,
     PermissionsModule,
+    CouponsModule,
   ],
   controllers: [AppController],
   providers: [AppService],

@@ -106,6 +106,8 @@ export class OrdersService {
       subtotal: Number(o.subtotal),
       shippingCost: Number(o.shipping_cost),
       discount: Number(o.discount || 0),
+      shippingDiscount: Number(o.shipping_discount || 0),
+      couponCode: o.coupon_code || undefined,
       total: Number(o.total_amount),
       status: o.status,
       createdAt: o.created_at instanceof Date ? o.created_at.toISOString() : o.created_at,
@@ -123,11 +125,17 @@ export class OrdersService {
 
     // Get shipping fee from zone
     const zoneInfo = await this.shippingService.getFeeForGovernorate(dto.address.governorate);
-    const shippingCost = dto.shippingCost || zoneInfo.fee;
+    const baseShippingCost = dto.shippingCost || zoneInfo.fee;
+    const isElectronicPayment = dto.paymentMethod === 'instapay' || dto.paymentMethod === 'vodafone_cash';
+    const shippingDiscount = dto.shippingDiscount !== undefined 
+      ? Number(dto.shippingDiscount) 
+      : (isElectronicPayment ? Math.round(baseShippingCost * 0.5) : 0);
+    const finalShippingCost = Math.max(0, baseShippingCost - shippingDiscount);
     const estimatedDelivery = zoneInfo.estimatedDays;
 
     const orderNumber = `ZHR-${Math.floor(100000 + Math.random() * 900000)}`;
     const fullName = `${dto.customer.firstName} ${dto.customer.lastName}`.trim();
+    const cleanCouponCode = dto.couponCode ? dto.couponCode.trim().toUpperCase() : null;
 
     if (this.prisma.isConnected) {
       try {
@@ -144,8 +152,10 @@ export class OrdersService {
             apartment: dto.address.apartment,
             notes: dto.address.notes,
             subtotal: dto.subtotal,
-            shipping_cost: shippingCost,
+            shipping_cost: baseShippingCost,
+            shipping_discount: shippingDiscount,
             discount: dto.discount ?? 0,
+            coupon_code: cleanCouponCode,
             total_amount: dto.total,
             payment_method: dto.paymentMethod,
             payment_reference: dto.paymentReference,
@@ -169,6 +179,18 @@ export class OrdersService {
             items: true,
           },
         });
+
+        // Increment coupon used_count if coupon was used
+        if (cleanCouponCode) {
+          try {
+            await this.prisma.coupon.updateMany({
+              where: { code: cleanCouponCode },
+              data: { used_count: { increment: 1 } },
+            });
+          } catch (couponErr) {
+            console.warn('Could not update coupon used_count:', couponErr.message);
+          }
+        }
 
         // Check if any order item contains a custom chair request
         for (const item of createdOrder.items) {
@@ -228,8 +250,10 @@ export class OrdersService {
       paymentMethod: dto.paymentMethod,
       paymentReference: dto.paymentReference,
       subtotal: dto.subtotal,
-      shippingCost,
+      shippingCost: baseShippingCost,
+      shippingDiscount,
       discount: dto.discount ?? 0,
+      couponCode: cleanCouponCode,
       total: dto.total,
       status: 'pending',
       createdAt: new Date().toISOString(),
