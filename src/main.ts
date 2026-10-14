@@ -27,10 +27,10 @@ export async function bootstrapApp(): Promise<Express> {
 
     // Enable CORS for Next.js storefront & admin clients
     app.enableCors({
-      origin: '*',
+      origin: true,
       credentials: true,
       methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
-      allowedHeaders: 'Content-Type,Accept,Authorization',
+      allowedHeaders: 'Content-Type,Accept,Authorization,x-api-key,X-API-KEY',
     });
 
     // Global validation pipe with transformation

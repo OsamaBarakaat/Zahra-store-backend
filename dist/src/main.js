@@ -63,10 +63,10 @@ async function bootstrapApp() {
         }
         const app = await core_1.NestFactory.create(app_module_1.AppModule, new platform_express_1.ExpressAdapter(server));
         app.enableCors({
-            origin: '*',
+            origin: true,
             credentials: true,
             methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
-            allowedHeaders: 'Content-Type,Accept,Authorization',
+            allowedHeaders: 'Content-Type,Accept,Authorization,x-api-key,X-API-KEY',
         });
         app.useGlobalPipes(new common_1.ValidationPipe({
             whitelist: true,
