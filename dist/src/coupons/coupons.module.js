@@ -10,11 +10,13 @@ exports.CouponsModule = void 0;
 const common_1 = require("@nestjs/common");
 const coupons_controller_1 = require("./coupons.controller");
 const coupons_service_1 = require("./coupons.service");
+const auth_module_1 = require("../auth/auth.module");
 let CouponsModule = class CouponsModule {
 };
 exports.CouponsModule = CouponsModule;
 exports.CouponsModule = CouponsModule = __decorate([
     (0, common_1.Module)({
+        imports: [auth_module_1.AuthModule],
         controllers: [coupons_controller_1.CouponsController],
         providers: [coupons_service_1.CouponsService],
         exports: [coupons_service_1.CouponsService],
