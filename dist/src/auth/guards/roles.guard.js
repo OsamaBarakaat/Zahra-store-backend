@@ -42,10 +42,20 @@ let RolesGuard = class RolesGuard {
         if (requiredRoles.includes(user.role)) {
             return true;
         }
+        const path = (req.route?.path || req.url || '').toLowerCase();
+        const method = (req.method || 'GET').toUpperCase();
+        if (user.role === 'STOREFRONT') {
+            if (method === 'GET' && (path.includes('product') || path.includes('categor') || path.includes('shipping') || path.includes('search'))) {
+                return true;
+            }
+            if (method === 'POST' && (path.includes('orders') || path.includes('chair'))) {
+                return true;
+            }
+            throw new common_1.ForbiddenException('صلاحية مفتاح المتجر تقتصر على تصفح المنتجات وتقديم الطلبات فقط');
+        }
         const perms = Array.isArray(user.permissions) && user.permissions.length > 0
             ? user.permissions
             : DEFAULT_ROLE_PERMS[user.role] || [];
-        const path = (req.route?.path || req.url || '').toLowerCase();
         if (path.includes('order') && perms.includes('orders'))
             return true;
         if (path.includes('chair') && perms.includes('custom_chairs'))

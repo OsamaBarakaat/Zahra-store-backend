@@ -38,13 +38,26 @@ export class RolesGuard implements CanActivate {
       return true;
     }
 
+    const path: string = (req.route?.path || req.url || '').toLowerCase();
+    const method: string = (req.method || 'GET').toUpperCase();
+
+    // STOREFRONT role is only allowed for customer browsing and ordering
+    if (user.role === 'STOREFRONT') {
+      if (method === 'GET' && (path.includes('product') || path.includes('categor') || path.includes('shipping') || path.includes('search'))) {
+        return true;
+      }
+      if (method === 'POST' && (path.includes('orders') || path.includes('chair'))) {
+        return true;
+      }
+      throw new ForbiddenException('صلاحية مفتاح المتجر تقتصر على تصفح المنتجات وتقديم الطلبات فقط');
+    }
+
     // Dynamic Permission check
     const perms: string[] =
       Array.isArray(user.permissions) && user.permissions.length > 0
         ? user.permissions
         : DEFAULT_ROLE_PERMS[user.role] || [];
 
-    const path: string = (req.route?.path || req.url || '').toLowerCase();
     if (path.includes('order') && perms.includes('orders')) return true;
     if (path.includes('chair') && perms.includes('custom_chairs')) return true;
     if (path.includes('product') && perms.includes('products')) return true;
@@ -58,4 +71,3 @@ export class RolesGuard implements CanActivate {
     throw new ForbiddenException(`يتطلب هذا الإجراء صلاحيات: ${requiredRoles.join(', ')}`);
   }
 }
-
