@@ -33,13 +33,13 @@ export declare class CategoriesService {
         is_active: boolean;
     }>;
     create(dto: CreateCategoryDto): Promise<{
-        description: string | null;
         id: string;
         is_active: boolean;
         created_at: Date;
         updated_at: Date;
-        name_ar: string;
         slug: string;
+        name_ar: string;
+        description: string | null;
         image_url: string | null;
         sort_order: number;
         is_featured: boolean;
@@ -59,6 +59,17 @@ export declare class CategoriesService {
     }>;
     update(id: string, dto: UpdateCategoryDto): Promise<{
         id: string;
+        is_active: boolean;
+        created_at: Date;
+        updated_at: Date;
+        slug: string;
+        name_ar: string;
+        description: string | null;
+        image_url: string | null;
+        sort_order: number;
+        is_featured: boolean;
+    } | {
+        id: string;
         slug: string;
         name: string;
         name_ar: string;
@@ -70,17 +81,6 @@ export declare class CategoriesService {
         is_featured: boolean;
         sort_order: number;
         is_active: boolean;
-    } | {
-        description: string | null;
-        id: string;
-        is_active: boolean;
-        created_at: Date;
-        updated_at: Date;
-        name_ar: string;
-        slug: string;
-        image_url: string | null;
-        sort_order: number;
-        is_featured: boolean;
     }>;
     findProducts(slug: string): Promise<{
         id: string;
@@ -139,6 +139,17 @@ export declare class CategoriesService {
     }[]>;
     delete(id: string): Promise<{
         id: string;
+        is_active: boolean;
+        created_at: Date;
+        updated_at: Date;
+        slug: string;
+        name_ar: string;
+        description: string | null;
+        image_url: string | null;
+        sort_order: number;
+        is_featured: boolean;
+    } | {
+        id: string;
         slug: string;
         name: string;
         name_ar: string;
@@ -150,16 +161,5 @@ export declare class CategoriesService {
         is_featured: boolean;
         sort_order: number;
         is_active: boolean;
-    } | {
-        description: string | null;
-        id: string;
-        is_active: boolean;
-        created_at: Date;
-        updated_at: Date;
-        name_ar: string;
-        slug: string;
-        image_url: string | null;
-        sort_order: number;
-        is_featured: boolean;
     }>;
 }

@@ -88,13 +88,13 @@ export declare class CategoriesController {
         isChairCover: boolean;
     }[]>;
     create(createCategoryDto: CreateCategoryDto): Promise<{
-        description: string | null;
         id: string;
         is_active: boolean;
         created_at: Date;
         updated_at: Date;
-        name_ar: string;
         slug: string;
+        name_ar: string;
+        description: string | null;
         image_url: string | null;
         sort_order: number;
         is_featured: boolean;
@@ -114,6 +114,17 @@ export declare class CategoriesController {
     }>;
     update(id: string, updateCategoryDto: UpdateCategoryDto): Promise<{
         id: string;
+        is_active: boolean;
+        created_at: Date;
+        updated_at: Date;
+        slug: string;
+        name_ar: string;
+        description: string | null;
+        image_url: string | null;
+        sort_order: number;
+        is_featured: boolean;
+    } | {
+        id: string;
         slug: string;
         name: string;
         name_ar: string;
@@ -125,20 +136,20 @@ export declare class CategoriesController {
         is_featured: boolean;
         sort_order: number;
         is_active: boolean;
-    } | {
-        description: string | null;
-        id: string;
-        is_active: boolean;
-        created_at: Date;
-        updated_at: Date;
-        name_ar: string;
-        slug: string;
-        image_url: string | null;
-        sort_order: number;
-        is_featured: boolean;
     }>;
     delete(id: string): Promise<{
         id: string;
+        is_active: boolean;
+        created_at: Date;
+        updated_at: Date;
+        slug: string;
+        name_ar: string;
+        description: string | null;
+        image_url: string | null;
+        sort_order: number;
+        is_featured: boolean;
+    } | {
+        id: string;
         slug: string;
         name: string;
         name_ar: string;
@@ -150,16 +161,5 @@ export declare class CategoriesController {
         is_featured: boolean;
         sort_order: number;
         is_active: boolean;
-    } | {
-        description: string | null;
-        id: string;
-        is_active: boolean;
-        created_at: Date;
-        updated_at: Date;
-        name_ar: string;
-        slug: string;
-        image_url: string | null;
-        sort_order: number;
-        is_featured: boolean;
     }>;
 }

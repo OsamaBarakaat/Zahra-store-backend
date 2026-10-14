@@ -16,8 +16,8 @@ export declare class AdminController {
         lowStockCount: number;
         lowStockProducts: {
             id: string;
-            name_ar: string;
             slug: string;
+            name_ar: string;
             in_stock: boolean;
             stock_quantity: number;
         }[];
@@ -25,12 +25,12 @@ export declare class AdminController {
             items: {
                 id: string;
                 product_id: string | null;
-                quantity: number;
                 product_name: string;
                 product_image: string | null;
                 selected_variants: string | null;
                 custom_chair_image: string | null;
                 custom_notes: string | null;
+                quantity: number;
                 unit_price: import("@prisma/client/runtime/library").Decimal;
                 total_price: import("@prisma/client/runtime/library").Decimal;
                 order_id: string;
@@ -39,27 +39,27 @@ export declare class AdminController {
             id: string;
             created_at: Date;
             updated_at: Date;
-            discount: import("@prisma/client/runtime/library").Decimal;
-            governorate: string;
-            city: string;
-            apartment: string | null;
-            notes: string | null;
-            subtotal: import("@prisma/client/runtime/library").Decimal;
-            status: string;
             order_number: string;
             customer_name: string;
             customer_phone: string;
             customer_alternate_phone: string | null;
             customer_email: string | null;
+            shipping_zone_id: string | null;
+            governorate: string;
+            city: string;
             street_address: string;
+            apartment: string | null;
+            notes: string | null;
+            subtotal: import("@prisma/client/runtime/library").Decimal;
             shipping_cost: import("@prisma/client/runtime/library").Decimal;
+            discount: import("@prisma/client/runtime/library").Decimal;
             shipping_discount: import("@prisma/client/runtime/library").Decimal;
             coupon_code: string | null;
             total_amount: import("@prisma/client/runtime/library").Decimal;
             payment_method: string;
             payment_reference: string | null;
+            status: string;
             estimated_delivery: string | null;
-            shipping_zone_id: string | null;
         })[];
         recentCustomRequests: ({
             order: {
@@ -69,10 +69,9 @@ export declare class AdminController {
             id: string;
             created_at: Date;
             updated_at: Date;
-            status: string;
             customer_name: string;
             customer_phone: string;
-            order_id: string | null;
+            status: string;
             chair_type: string;
             fabric_color: string;
             pattern_type: string;
@@ -80,6 +79,7 @@ export declare class AdminController {
             uploaded_photo_url: string;
             custom_extra_fee: import("@prisma/client/runtime/library").Decimal;
             admin_notes: string | null;
+            order_id: string | null;
             order_item_id: string | null;
         })[];
         salesChart: {
@@ -88,13 +88,13 @@ export declare class AdminController {
         }[];
     }>;
     getStaffUsers(): Promise<{
+        id: string;
+        is_active: boolean;
+        created_at: Date;
         email: string;
         full_name: string;
         role: string;
-        id: string;
         permissions: string[];
-        is_active: boolean;
-        created_at: Date;
     }[]>;
     createStaffUser(dto: {
         email: string;
@@ -127,23 +127,23 @@ export declare class AdminController {
         is_active?: boolean;
         password?: string;
     }): Promise<{
+        id: string;
+        is_active: boolean;
         email: string;
         full_name: string;
         role: string;
-        id: string;
         permissions: string[];
-        is_active: boolean;
     }>;
     deleteStaffUser(id: string): Promise<{
-        email: string;
-        full_name: string;
-        role: string;
         id: string;
-        password_hash: string;
-        permissions: string[];
         is_active: boolean;
         created_at: Date;
         updated_at: Date;
+        email: string;
+        password_hash: string;
+        full_name: string;
+        role: string;
+        permissions: string[];
     } | {
         success: boolean;
     }>;

@@ -252,6 +252,31 @@ export declare class OrdersController {
     }>;
     delete(id: string): Promise<{
         id: string;
+        created_at: Date;
+        updated_at: Date;
+        order_number: string;
+        customer_name: string;
+        customer_phone: string;
+        customer_alternate_phone: string | null;
+        customer_email: string | null;
+        shipping_zone_id: string | null;
+        governorate: string;
+        city: string;
+        street_address: string;
+        apartment: string | null;
+        notes: string | null;
+        subtotal: import("@prisma/client/runtime/library").Decimal;
+        shipping_cost: import("@prisma/client/runtime/library").Decimal;
+        discount: import("@prisma/client/runtime/library").Decimal;
+        shipping_discount: import("@prisma/client/runtime/library").Decimal;
+        coupon_code: string | null;
+        total_amount: import("@prisma/client/runtime/library").Decimal;
+        payment_method: string;
+        payment_reference: string | null;
+        status: string;
+        estimated_delivery: string | null;
+    } | {
+        id: string;
         orderNumber: string;
         customer: {
             firstName: string;
@@ -291,30 +316,5 @@ export declare class OrdersController {
         status: string;
         createdAt: string;
         estimatedDelivery: string;
-    } | {
-        id: string;
-        created_at: Date;
-        updated_at: Date;
-        discount: import("@prisma/client/runtime/library").Decimal;
-        governorate: string;
-        city: string;
-        apartment: string | null;
-        notes: string | null;
-        subtotal: import("@prisma/client/runtime/library").Decimal;
-        status: string;
-        order_number: string;
-        customer_name: string;
-        customer_phone: string;
-        customer_alternate_phone: string | null;
-        customer_email: string | null;
-        street_address: string;
-        shipping_cost: import("@prisma/client/runtime/library").Decimal;
-        shipping_discount: import("@prisma/client/runtime/library").Decimal;
-        coupon_code: string | null;
-        total_amount: import("@prisma/client/runtime/library").Decimal;
-        payment_method: string;
-        payment_reference: string | null;
-        estimated_delivery: string | null;
-        shipping_zone_id: string | null;
     }>;
 }
