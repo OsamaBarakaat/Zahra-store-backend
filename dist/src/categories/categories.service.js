@@ -134,7 +134,9 @@ let CategoriesService = class CategoriesService {
                 console.warn('Prisma error in findAll categories:', err?.message);
             }
         }
-        return MOCK_CATEGORIES;
+        return activeOnly
+            ? MOCK_CATEGORIES.filter((c) => c.is_active !== false)
+            : MOCK_CATEGORIES;
     }
     async findBySlug(slug) {
         if (this.prisma.isConnected) {
@@ -224,6 +226,27 @@ let CategoriesService = class CategoriesService {
         const idx = MOCK_CATEGORIES.findIndex((c) => c.id === id || c.slug === id);
         if (idx !== -1) {
             MOCK_CATEGORIES[idx] = { ...MOCK_CATEGORIES[idx], ...dto };
+            return MOCK_CATEGORIES[idx];
+        }
+        throw new common_1.NotFoundException('القسم غير موجود');
+    }
+    async toggleVisibility(id, is_active) {
+        if (this.prisma.isConnected) {
+            const current = await this.prisma.category.findUnique({ where: { id } });
+            if (!current)
+                throw new common_1.NotFoundException('القسم غير موجود');
+            const nextActive = is_active !== undefined ? is_active : !current.is_active;
+            return this.prisma.category.update({
+                where: { id },
+                data: { is_active: nextActive },
+            });
+        }
+        const idx = MOCK_CATEGORIES.findIndex((c) => c.id === id || c.slug === id);
+        if (idx !== -1) {
+            const nextActive = is_active !== undefined
+                ? is_active
+                : !(MOCK_CATEGORIES[idx].is_active ?? true);
+            MOCK_CATEGORIES[idx].is_active = nextActive;
             return MOCK_CATEGORIES[idx];
         }
         throw new common_1.NotFoundException('القسم غير موجود');

@@ -16,9 +16,6 @@ exports.SearchController = void 0;
 const common_1 = require("@nestjs/common");
 const swagger_1 = require("@nestjs/swagger");
 const products_service_1 = require("./products.service");
-const jwt_auth_guard_1 = require("../auth/guards/jwt-auth.guard");
-const roles_guard_1 = require("../auth/guards/roles.guard");
-const roles_decorator_1 = require("../auth/decorators/roles.decorator");
 let SearchController = class SearchController {
     productsService;
     constructor(productsService) {
@@ -31,7 +28,6 @@ let SearchController = class SearchController {
 exports.SearchController = SearchController;
 __decorate([
     (0, common_1.Get)(),
-    (0, roles_decorator_1.Roles)('ADMIN', 'MANAGER', 'SUPPORT', 'CUSTOM'),
     (0, swagger_1.ApiOperation)({ summary: 'البحث النصي الذكي عن المنتجات' }),
     (0, swagger_1.ApiQuery)({ name: 'q', required: true, description: 'كلمة البحث' }),
     __param(0, (0, common_1.Query)('q')),
@@ -42,8 +38,6 @@ __decorate([
 exports.SearchController = SearchController = __decorate([
     (0, swagger_1.ApiTags)('Search (البحث)'),
     (0, common_1.Controller)('search'),
-    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard, roles_guard_1.RolesGuard),
-    (0, swagger_1.ApiBearerAuth)('JWT'),
     __metadata("design:paramtypes", [products_service_1.ProductsService])
 ], SearchController);
 //# sourceMappingURL=search.controller.js.map

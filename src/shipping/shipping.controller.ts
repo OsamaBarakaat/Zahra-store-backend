@@ -8,27 +8,28 @@ import { Roles } from '../auth/decorators/roles.decorator';
 
 @ApiTags('Shipping (مناطق الشحن والمحافظات)')
 @Controller('shipping')
-@UseGuards(JwtAuthGuard, RolesGuard)
-@ApiBearerAuth('JWT')
 export class ShippingController {
   constructor(private readonly shippingService: ShippingService) {}
 
   @Get('zones')
-  @Roles('ADMIN', 'MANAGER', 'SUPPORT', 'CUSTOM')
   @ApiOperation({ summary: 'عرض قائمة محافظات مصر وأسعار الشحن والمدة التقديرية' })
   findAllZones() {
     return this.shippingService.findAllZones();
   }
 
   @Put('zones-bulk')
+  @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles('ADMIN')
+  @ApiBearerAuth('JWT')
   @ApiOperation({ summary: 'تعديل وحفظ جميع أسعار الشحن والمحافظات دفعة واحدة (Admin)' })
   updateAllZones(@Body() items: Array<{ id: string; shipping_fee?: number; estimated_days?: string; is_active?: boolean }>) {
     return this.shippingService.updateAllZones(items);
   }
 
   @Put('zones/:id')
+  @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles('ADMIN')
+  @ApiBearerAuth('JWT')
   @ApiOperation({ summary: 'تعديل سعر الشحن أو مدة التوصيل أو حالة التفعيل للمحافظة (Admin)' })
   updateZone(@Param('id') id: string, @Body() updateDto: UpdateShippingZoneDto) {
     return this.shippingService.updateZone(id, updateDto);

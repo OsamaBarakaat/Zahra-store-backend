@@ -434,11 +434,24 @@
         <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm flex flex-col sm:flex-row items-center justify-between gap-4">
           <div>
             <h2 class="font-bold text-slate-900 text-base">الأقسام والتصنيفات</h2>
-            <p class="text-xs text-slate-500">التحكم في أقسام المتجر، الترتيب، الصور والظهور في الموقع</p>
+            <p class="text-xs text-slate-500">التحكم في أقسام المتجر، الصور، وإظهار أو إخفاء أي قسم مؤقتاً عن المتجر</p>
           </div>
-          <button onclick="openCategoryModal()" class="px-4 py-2.5 bg-brand-600 hover:bg-brand-700 text-white rounded-xl text-xs font-bold shadow-sm transition-colors flex items-center gap-2">
+          <button onclick="openCategoryModal()" class="px-4 py-2.5 bg-brand-600 hover:bg-brand-700 text-white rounded-xl text-xs font-bold shadow-sm transition-colors flex items-center gap-2 cursor-pointer">
             <i class="fa-solid fa-plus"></i>
             إضافة قسم جديد
+          </button>
+        </div>
+
+        <!-- Filter tabs for category visibility -->
+        <div class="flex items-center gap-2 overflow-x-auto pb-1">
+          <button onclick="filterCategories('all')" id="btn-cat-filter-all" class="px-3.5 py-1.5 rounded-xl text-xs font-bold bg-brand-600 text-white shadow-2xs cursor-pointer">
+            الكل (<span id="cat-count-all">0</span>)
+          </button>
+          <button onclick="filterCategories('active')" id="btn-cat-filter-active" class="px-3.5 py-1.5 rounded-xl text-xs font-bold bg-slate-100 text-slate-600 hover:bg-slate-200 cursor-pointer">
+            المعروضة بالمتجر (<span id="cat-count-active">0</span>)
+          </button>
+          <button onclick="filterCategories('hidden')" id="btn-cat-filter-hidden" class="px-3.5 py-1.5 rounded-xl text-xs font-bold bg-slate-100 text-slate-600 hover:bg-slate-200 cursor-pointer">
+            المخفية مؤقتاً (<span id="cat-count-hidden">0</span>)
           </button>
         </div>
 
@@ -908,7 +921,7 @@
         <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
           <div>
             <label class="block font-bold text-slate-700 mb-1">القسم *</label>
-            <select id="prodCategory" required class="w-full bg-slate-50 border border-slate-200 rounded-xl p-2.5 focus:border-brand-500 focus:outline-none font-semibold"></select>
+            <select id="prodCategory" required onchange="onCategorySelectChange(this.value)" class="w-full bg-slate-50 border border-slate-200 rounded-xl p-2.5 focus:border-brand-500 focus:outline-none font-semibold"></select>
           </div>
           <div>
             <label class="block font-bold text-slate-700 mb-1">السعر الحالي (ج.م) *</label>
@@ -1022,9 +1035,120 @@
             <span class="font-bold text-slate-700">عرض وخصم (Sale)</span>
           </label>
           <label class="flex items-center gap-2 cursor-pointer">
-            <input type="checkbox" id="prodIsChairCover" class="rounded text-brand-600 w-4 h-4" />
-            <span class="font-bold text-slate-700">تلبيسة كراسي (تفعيل خيار العمولة)</span>
+            <input type="checkbox" id="prodIsChairCover" onchange="toggleChairCoverOptions(this.checked)" class="rounded text-brand-600 w-4 h-4" />
+            <span class="font-bold text-slate-700">طقم تلبيسات كراسي (تفعيل خيارات الألوان والنقشات والعمولة)</span>
           </label>
+        </div>
+
+        <!-- CHAIR COVER CUSTOMIZATION SECTION -->
+        <div id="chairCoverCustomizationSection" class="hidden bg-emerald-50/70 p-4 sm:p-5 rounded-2xl border-2 border-emerald-300 space-y-4 transition-all">
+          <div class="flex items-center justify-between border-b border-emerald-200 pb-3">
+            <div class="flex items-center gap-2.5">
+              <span class="w-9 h-9 rounded-xl bg-emerald-600 text-white flex items-center justify-center font-bold text-base shadow-xs">
+                <i class="fa-solid fa-chair"></i>
+              </span>
+              <div>
+                <h4 class="font-black text-emerald-950 text-sm">إعدادات طقم تلبيسات الكراسي والتفصيل العمولة</h4>
+                <p class="text-[11px] text-emerald-700">هذه الخيارات إجبارية لأطقم التلبيسات: تحديد الألوان، سعر العمولة، وأشكال النقشات بالصور</p>
+              </div>
+            </div>
+            <span class="text-[11px] bg-emerald-100 text-emerald-800 font-black px-2.5 py-1 rounded-full border border-emerald-300">
+              إلزامي لطقم التلبيسات
+            </span>
+          </div>
+
+          <!-- 1. Custom Tailoring Fee -->
+          <div class="bg-white p-4 rounded-xl border border-emerald-100 space-y-2">
+            <div class="flex items-center justify-between">
+              <label class="font-bold text-slate-800 text-xs flex items-center gap-1.5">
+                <i class="fa-solid fa-coins text-amber-500"></i>
+                <span>سعر العمولة الإضافي للطقم (ج.م) *</span>
+              </label>
+              <span class="text-[11px] text-slate-500">المبلغ الإضافي إذا اختار العميل (تفصيل عمولة بالمقاس)</span>
+            </div>
+            <div class="flex items-center gap-3">
+              <input type="number" id="prodCustomFee" min="0" step="10" placeholder="200" value="200" class="w-48 bg-slate-50 border border-slate-200 rounded-lg p-2 text-xs font-bold focus:border-brand-500 focus:outline-none" />
+              <span class="text-xs text-slate-600 font-semibold">جنيه مصري (المقترح: 200 ج.م)</span>
+            </div>
+          </div>
+
+          <!-- 2. Available Colors -->
+          <div class="bg-white p-4 rounded-xl border border-emerald-100 space-y-3">
+            <div class="flex items-center justify-between">
+              <label class="font-bold text-slate-800 text-xs flex items-center gap-1.5">
+                <i class="fa-solid fa-palette text-pink-600"></i>
+                <span>الألوان المتاحة للطقم *</span>
+              </label>
+              <span id="productColorsCountBadge" class="text-[11px] bg-pink-50 text-pink-700 font-bold px-2.5 py-0.5 rounded-full border border-pink-200">0 ألوان</span>
+            </div>
+
+            <!-- Preset Colors Quick-Add -->
+            <div class="space-y-1.5">
+              <span class="text-[11px] text-slate-500 font-bold block">ألوان مقترحة سريعة (اضغط للإضافة مباشرة):</span>
+              <div class="flex flex-wrap gap-1.5" id="presetColorsChips"></div>
+            </div>
+
+            <!-- Custom Color Add Form -->
+            <div class="flex flex-wrap items-center gap-2 pt-2 border-t border-slate-100">
+              <input type="text" id="prodNewColorName" placeholder="اسم اللون (مثال: بترولي)" class="w-40 bg-slate-50 border border-slate-200 rounded-lg p-2 text-xs focus:border-brand-500 focus:outline-none" />
+              <div class="flex items-center gap-1.5 bg-slate-50 border border-slate-200 rounded-lg px-2.5 py-1.5">
+                <label for="prodNewColorHex" class="text-[11px] text-slate-500 font-semibold cursor-pointer">الكود:</label>
+                <input type="color" id="prodNewColorHex" value="#1B2A4A" class="w-6 h-6 border-0 bg-transparent cursor-pointer rounded" />
+              </div>
+              <button type="button" onclick="addProductColor()" class="px-3.5 py-2 bg-brand-700 hover:bg-brand-800 text-white rounded-lg text-xs font-bold transition-colors">
+                <i class="fa-solid fa-plus ml-1"></i> إضافة لون مخصص
+              </button>
+            </div>
+
+            <!-- Selected Colors List -->
+            <div id="productColorsContainer" class="flex flex-wrap gap-2 pt-1 min-h-[42px] items-center p-2.5 rounded-lg bg-slate-50/70 border border-dashed border-slate-200">
+              <span class="text-xs text-rose-500 font-semibold italic">⚠️ لم يتم إضافة ألوان بعد (أضف لوناً واحداً على الأقل)</span>
+            </div>
+          </div>
+
+          <!-- 3. Available Patterns with Images -->
+          <div class="bg-white p-4 rounded-xl border border-emerald-100 space-y-3">
+            <div class="flex items-center justify-between">
+              <label class="font-bold text-slate-800 text-xs flex items-center gap-1.5">
+                <i class="fa-solid fa-shapes text-brand-600"></i>
+                <span>أشكال ونقشات التفصيلة بالصور (أشكال النقشات المتاحة للاختيار) *</span>
+              </label>
+              <span id="productPatternsCountBadge" class="text-[11px] bg-brand-50 text-brand-700 font-bold px-2.5 py-0.5 rounded-full border border-brand-200">0 نقشات</span>
+            </div>
+
+            <!-- Add Pattern Control -->
+            <div class="p-3.5 bg-slate-50 rounded-xl border border-slate-200 space-y-2.5">
+              <span class="text-[11px] font-bold text-slate-700 block">إضافة نقشة جديدة مع صورتها:</span>
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                <div>
+                  <input type="text" id="prodNewPatternName" placeholder="اسم النقشة (مثال: كاروهات كلاسيك / جاكار ورود)" class="w-full bg-white border border-slate-200 rounded-lg p-2 text-xs focus:border-brand-500 focus:outline-none" />
+                </div>
+                <div class="flex items-center gap-2">
+                  <input type="file" id="prodNewPatternFile" accept="image/*" class="text-xs file:ml-2 file:py-1 file:px-2.5 file:rounded-lg file:border-0 file:text-[11px] file:font-bold file:bg-brand-50 file:text-brand-700 hover:file:bg-brand-100 cursor-pointer w-full" />
+                  <button type="button" onclick="uploadPatternFile()" class="px-3 py-1.5 bg-brand-600 hover:bg-brand-700 text-white rounded-lg text-xs font-bold whitespace-nowrap">
+                    <i class="fa-solid fa-cloud-arrow-up ml-1"></i> رفع
+                  </button>
+                </div>
+              </div>
+              <div class="flex items-center gap-2">
+                <input type="text" id="prodNewPatternUrl" oninput="previewNewPatternImage(this.value)" placeholder="أو الصق رابط صورة النقشة مباشرة (https://...)" class="w-full bg-white border border-slate-200 rounded-lg p-2 text-[11px] focus:border-brand-500 focus:outline-none" />
+                <button type="button" onclick="addProductPattern()" class="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-xs font-bold whitespace-nowrap shadow-xs">
+                  <i class="fa-solid fa-plus ml-1"></i> حفظ النقشة للقائمة
+                </button>
+              </div>
+              <div id="newPatternPreviewContainer" class="hidden flex items-center gap-2.5 pt-1">
+                <img id="newPatternPreviewImg" src="" class="w-14 h-14 rounded-lg object-cover border border-slate-200 shadow-xs" />
+                <span class="text-[11px] text-slate-500">معاينة صورة النقشة</span>
+              </div>
+            </div>
+
+            <!-- Patterns Grid -->
+            <div id="productPatternsContainer" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 pt-1">
+              <div class="col-span-full text-xs text-rose-500 font-semibold italic p-3.5 text-center bg-rose-50/50 rounded-lg border border-dashed border-rose-200">
+                ⚠️ لم يتم إضافة أي نقشات بعد (أضف نقشة واحدة على الأقل بالصورة)
+              </div>
+            </div>
+          </div>
         </div>
 
         <div class="mt-6 flex items-center justify-end gap-3 pt-4 border-t border-slate-100">
@@ -1057,10 +1181,63 @@
           <label class="block font-bold text-slate-700 mb-1">الوصف</label>
           <input type="text" id="catDescription" placeholder="وصف موجز للقسم..." class="w-full bg-slate-50 border border-slate-200 rounded-xl p-2.5 focus:border-brand-500 focus:outline-none" />
         </div>
-        <div>
-          <label class="block font-bold text-slate-700 mb-1">رابط صورة القسم</label>
-          <input type="text" id="catImageUrl" placeholder="https://..." class="w-full bg-slate-50 border border-slate-200 rounded-xl p-2.5 focus:border-brand-500 focus:outline-none text-[11px]" />
+
+        <!-- 1. Category Image File Upload -->
+        <div class="bg-slate-50 p-3.5 rounded-xl border border-slate-200 space-y-2.5">
+          <div class="flex items-center justify-between">
+            <label class="font-bold text-slate-700 text-xs flex items-center gap-1.5">
+              <i class="fa-solid fa-cloud-arrow-up text-brand-600"></i>
+              <span>رفع صورة القسم (من جهازك) *</span>
+            </label>
+            <span class="text-[10px] bg-brand-100 text-brand-800 font-bold px-2 py-0.5 rounded-full">صورة القسم</span>
+          </div>
+
+          <div class="flex items-center gap-2">
+            <input type="file" id="catImageFile" accept="image/*" onchange="handleCatImageFileChange(this)" class="hidden" />
+            <button type="button" onclick="document.getElementById('catImageFile').click()" class="px-3.5 py-2 bg-white hover:bg-slate-100 text-slate-700 border border-slate-300 rounded-xl font-bold text-xs flex items-center gap-2 transition-all shadow-2xs cursor-pointer">
+              <i class="fa-solid fa-folder-open text-brand-600"></i>
+              <span>اختيار صورة من جهازك</span>
+            </button>
+            <span id="catImageFileStatus" class="text-[11px] text-slate-400 truncate max-w-[200px]">لم يتم اختيار صورة بعد</span>
+          </div>
+
+          <!-- Hidden input storing final image URL or data -->
+          <input type="hidden" id="catImageUrl" value="" />
+
+          <!-- Preview thumbnail card -->
+          <div id="catImagePreviewBox" class="hidden flex items-center gap-3 bg-white p-2.5 rounded-xl border border-slate-200">
+            <img id="catImagePreviewImg" src="" class="w-14 h-14 rounded-lg object-cover border border-slate-200 shadow-2xs" />
+            <div class="flex-1 min-w-0">
+              <span class="font-bold text-xs text-slate-800 block truncate" id="catImagePreviewName">معاينة صورة القسم</span>
+              <span class="text-[10px] text-emerald-600 font-semibold flex items-center gap-1 mt-0.5" id="catImageUploadStatus">
+                <i class="fa-solid fa-circle-check"></i> جاهزة للحفظ
+              </span>
+            </div>
+            <button type="button" onclick="clearCatImage()" class="p-1.5 text-slate-400 hover:text-rose-600 rounded-lg transition-colors cursor-pointer" title="حذف الصورة">
+              <i class="fa-solid fa-trash-can"></i>
+            </button>
+          </div>
         </div>
+
+        <!-- 2. Visibility / Active Toggle -->
+        <div class="flex items-center justify-between p-3.5 bg-slate-50 rounded-xl border border-slate-200">
+          <div>
+            <label for="catIsActive" class="font-bold text-slate-800 cursor-pointer block text-xs">
+              حالة ظهور القسم في المتجر
+            </label>
+            <p class="text-[11px] text-slate-500 mt-0.5" id="catActiveHint">
+              القسم معروض حالياً في المتجر ويمكن للعملاء تصفحه والشراء منه
+            </p>
+          </div>
+          <div class="flex items-center gap-2">
+            <span class="text-[11px] font-bold text-emerald-700" id="catActiveBadge">معروض</span>
+            <label class="relative inline-flex items-center cursor-pointer">
+              <input type="checkbox" id="catIsActive" checked onchange="updateCatActiveUi(this.checked)" class="sr-only peer" />
+              <div class="w-11 h-6 bg-slate-300 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-emerald-600"></div>
+            </label>
+          </div>
+        </div>
+
         <div class="grid grid-cols-2 gap-4">
           <div>
             <label class="block font-bold text-slate-700 mb-1">ترتيب الظهور</label>
@@ -1073,8 +1250,8 @@
         </div>
 
         <div class="mt-6 flex items-center justify-end gap-3 pt-4 border-t border-slate-100">
-          <button type="button" onclick="closeCategoryModal()" class="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl font-bold">إلغاء</button>
-          <button type="submit" class="px-5 py-2 bg-brand-600 hover:bg-brand-700 text-white rounded-xl font-bold shadow-sm">حفظ القسم</button>
+          <button type="button" onclick="closeCategoryModal()" class="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl font-bold cursor-pointer">إلغاء</button>
+          <button type="submit" class="px-5 py-2 bg-brand-600 hover:bg-brand-700 text-white rounded-xl font-bold shadow-sm cursor-pointer">حفظ القسم</button>
         </div>
       </form>
     </div>
@@ -2185,6 +2362,194 @@
       }
     }
 
+    // ── Chair Cover Customization State & Handlers ──
+    let currentProductColors = [];
+    let currentProductPatterns = [];
+
+    const PRESET_CHAIR_COLORS = [
+      { name: 'كشمير', hex: '#C38D9E' },
+      { name: 'كافيه / بيج', hex: '#D4B996' },
+      { name: 'كحلي', hex: '#1B2A4A' },
+      { name: 'نبيتي', hex: '#671425' },
+      { name: 'رصاصي', hex: '#708090' },
+      { name: 'بترولي', hex: '#005F73' },
+      { name: 'زيتي', hex: '#4F5D2F' },
+      { name: 'أسود', hex: '#1E1E1E' },
+      { name: 'أوف وايت', hex: '#F5F5DC' },
+      { name: 'هافان', hex: '#8B4513' },
+      { name: 'مستردة', hex: '#D4A373' },
+    ];
+
+    function initPresetColorsUI() {
+      const container = document.getElementById('presetColorsChips');
+      if (!container) return;
+      container.innerHTML = PRESET_CHAIR_COLORS.map(c => `
+        <button type="button" onclick="addPresetColor('${c.name}', '${c.hex}')" class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[10px] font-bold bg-white border border-slate-200 hover:border-brand-500 hover:bg-brand-50 transition-colors shadow-2xs cursor-pointer">
+          <span class="w-3 h-3 rounded-full border border-black/10 shadow-xs" style="background-color: ${c.hex}"></span>
+          <span>${c.name}</span>
+        </button>
+      `).join('');
+    }
+
+    function toggleChairCoverOptions(isCover) {
+      const section = document.getElementById('chairCoverCustomizationSection');
+      if (!section) return;
+      if (isCover) {
+        section.classList.remove('hidden');
+        initPresetColorsUI();
+        renderProductColors();
+        renderProductPatterns();
+      } else {
+        section.classList.add('hidden');
+      }
+    }
+
+    function onCategorySelectChange(catSlug) {
+      if (!catSlug) return;
+      const lower = catSlug.toLowerCase();
+      const catObj = categoriesList.find(c => c.slug === catSlug || c.id === catSlug);
+      const name = (catObj?.name || catObj?.name_ar || '').toLowerCase();
+      const isChair = lower.includes('chair') || lower.includes('cover') || name.includes('كرسي') || name.includes('كراسي') || name.includes('تلبيس') || name.includes('سفره') || name.includes('سفرة');
+      if (isChair) {
+        const checkbox = document.getElementById('prodIsChairCover');
+        if (checkbox) checkbox.checked = true;
+        toggleChairCoverOptions(true);
+      }
+    }
+
+    function addPresetColor(name, hex) {
+      if (currentProductColors.some(c => c.name === name || (c.hex && c.hex.toLowerCase() === hex.toLowerCase()))) {
+        showToast(`اللون "${name}" مضاف بالفعل`, 'warning');
+        return;
+      }
+      currentProductColors.push({ name, hex });
+      renderProductColors();
+    }
+
+    function addProductColor() {
+      const name = document.getElementById('prodNewColorName').value.trim();
+      const hex = document.getElementById('prodNewColorHex').value.trim() || '#1B2A4A';
+      if (!name) {
+        showToast('يرجى كتابة اسم اللون أولاً', 'error');
+        return;
+      }
+      if (currentProductColors.some(c => c.name === name)) {
+        showToast(`اللون "${name}" موجود مسبقاً`, 'warning');
+        return;
+      }
+      currentProductColors.push({ name, hex });
+      document.getElementById('prodNewColorName').value = '';
+      renderProductColors();
+    }
+
+    function removeProductColor(index) {
+      currentProductColors.splice(index, 1);
+      renderProductColors();
+    }
+
+    function renderProductColors() {
+      const container = document.getElementById('productColorsContainer');
+      const badge = document.getElementById('productColorsCountBadge');
+      if (!container) return;
+      if (badge) badge.textContent = `${currentProductColors.length} ألوان`;
+      if (currentProductColors.length === 0) {
+        container.innerHTML = '<span class="text-xs text-rose-500 font-semibold italic p-1">⚠️ إلزامي: لم يتم إضافة ألوان بعد (أضف لوناً واحداً على الأقل)</span>';
+        return;
+      }
+      container.innerHTML = currentProductColors.map((c, i) => `
+        <div class="inline-flex items-center gap-2 bg-white px-2.5 py-1.5 rounded-lg border border-slate-200 shadow-2xs">
+          <span class="w-3.5 h-3.5 rounded-full border border-black/10 shrink-0 shadow-xs" style="background-color: ${c.hex}"></span>
+          <span class="text-xs font-bold text-slate-800">${c.name}</span>
+          <span class="text-[10px] font-mono text-slate-400 font-bold">${c.hex}</span>
+          <button type="button" onclick="removeProductColor(${i})" class="text-slate-400 hover:text-rose-600 mr-1 text-sm font-bold leading-none cursor-pointer" title="حذف">&times;</button>
+        </div>
+      `).join('');
+    }
+
+    async function uploadPatternFile() {
+      const fileInput = document.getElementById('prodNewPatternFile');
+      if (!fileInput || !fileInput.files || fileInput.files.length === 0) {
+        showToast('يرجى اختيار ملف صورة للنقشة أولاً', 'error');
+        return;
+      }
+      const file = fileInput.files[0];
+      const formData = new FormData();
+      formData.append('file', file);
+      try {
+        showToast('جارٍ رفع صورة النقشة...', 'info');
+        const res = await fetch(`${API_BASE}/storage/upload?bucket=products`, {
+          method: 'POST',
+          headers: { 'Authorization': `Bearer ${getAuthToken()}` },
+          body: formData,
+        });
+        if (res.ok) {
+          const data = await res.json();
+          document.getElementById('prodNewPatternUrl').value = data.url;
+          previewNewPatternImage(data.url);
+          showToast('تم رفع صورة النقشة بنجاح');
+        } else {
+          showToast('فشل رفع الصورة', 'error');
+        }
+      } catch (e) {
+        showToast('حدث خطأ أثناء رفع صورة النقشة', 'error');
+      }
+    }
+
+    function previewNewPatternImage(url) {
+      const container = document.getElementById('newPatternPreviewContainer');
+      const img = document.getElementById('newPatternPreviewImg');
+      if (!container || !img) return;
+      if (url && url.trim().length > 5) {
+        img.src = url.trim();
+        container.classList.remove('hidden');
+      } else {
+        container.classList.add('hidden');
+      }
+    }
+
+    function addProductPattern() {
+      const name = document.getElementById('prodNewPatternName').value.trim();
+      const image = document.getElementById('prodNewPatternUrl').value.trim();
+      if (!name) {
+        showToast('يرجى كتابة اسم النقشة (مثال: كاروهات كلاسيك)', 'error');
+        return;
+      }
+      if (!image) {
+        showToast('يرجى رفع أو إدخال رابط صورة النقشة', 'error');
+        return;
+      }
+      currentProductPatterns.push({ name, image });
+      document.getElementById('prodNewPatternName').value = '';
+      document.getElementById('prodNewPatternUrl').value = '';
+      const fileInput = document.getElementById('prodNewPatternFile');
+      if (fileInput) fileInput.value = '';
+      previewNewPatternImage('');
+      renderProductPatterns();
+    }
+
+    function removeProductPattern(index) {
+      currentProductPatterns.splice(index, 1);
+      renderProductPatterns();
+    }
+
+    function renderProductPatterns() {
+      const container = document.getElementById('productPatternsContainer');
+      const badge = document.getElementById('productPatternsCountBadge');
+      if (!container) return;
+      if (badge) badge.textContent = `${currentProductPatterns.length} نقشات`;
+      if (currentProductPatterns.length === 0) {
+        container.innerHTML = '<div class="col-span-full text-xs text-rose-500 font-semibold italic p-3 text-center bg-rose-50/50 rounded-lg border border-dashed border-rose-200">⚠️ إلزامي: لم يتم إضافة أي نقشات بعد (أضف نقشة واحدة على الأقل بالصورة)</div>';
+        return;
+      }
+      container.innerHTML = currentProductPatterns.map((p, i) => `
+        <div class="relative group bg-slate-50 border border-slate-200 rounded-xl p-2 flex flex-col items-center gap-1.5 shadow-2xs">
+          <img src="${p.image}" alt="${p.name}" class="w-full h-20 rounded-lg object-cover border border-slate-200" onerror="this.src='data:image/svg+xml,%3Csvg xmlns=\\'http://www.w3.org/2000/svg\\' width=\\'80\\' height=\\'80\\' fill=\\'%23f1f5f9\\'%3E%3Crect width=\\'80\\' height=\\'80\\'/%3E%3C/svg%3E'" />
+          <span class="text-xs font-bold text-slate-800 text-center truncate w-full" title="${p.name}">${p.name}</span>
+          <button type="button" onclick="removeProductPattern(${i})" class="absolute top-1 left-1 w-6 h-6 bg-rose-600 hover:bg-rose-700 text-white rounded-full flex items-center justify-center text-xs shadow-xs transition-colors cursor-pointer" title="حذف النقشة">&times;</button>
+        </div>
+      `).join('');
+    }
+
     async function openProductModal() {
       await populateCategoryDropdown();
       document.getElementById('productForm').reset();
@@ -2195,6 +2560,14 @@
       document.getElementById('prodPrimaryImagePreviewContainer').classList.add('hidden');
       secondaryImagesList = [];
       renderSecondaryImages();
+
+      // Reset chair cover options
+      currentProductColors = [];
+      currentProductPatterns = [];
+      document.getElementById('prodCustomFee').value = 200;
+      document.getElementById('prodIsChairCover').checked = false;
+      toggleChairCoverOptions(false);
+
       document.getElementById('productModal').classList.remove('hidden');
     }
 
@@ -2233,7 +2606,21 @@
       document.getElementById('prodInStock').checked = prod.inStock;
       document.getElementById('prodIsFeatured').checked = !!prod.isFeatured;
       document.getElementById('prodIsOnSale').checked = !!prod.isOnSale;
-      document.getElementById('prodIsChairCover').checked = !!prod.isChairCover;
+
+      // Chair cover configurations
+      const isCover = !!prod.isChairCover;
+      document.getElementById('prodIsChairCover').checked = isCover;
+      document.getElementById('prodCustomFee').value = (prod.customFee !== undefined && prod.customFee !== null) ? prod.customFee : 200;
+
+      currentProductColors = (prod.availableColors && prod.availableColors.length > 0)
+        ? prod.availableColors.map(c => ({ name: c.name, hex: c.hex || '#1B2A4A' }))
+        : (prod.variants || []).filter(v => (v.variant_type || v.type) === 'color').map(v => ({ name: v.name_ar || v.name, hex: v.value || '#1B2A4A' }));
+
+      currentProductPatterns = (prod.availablePatterns && prod.availablePatterns.length > 0)
+        ? prod.availablePatterns.map(p => ({ name: p.name, image: p.image }))
+        : (prod.variants || []).filter(v => (v.variant_type || v.type) === 'pattern').map(v => ({ name: v.name_ar || v.name, image: v.image_url || v.image }));
+
+      toggleChairCoverOptions(isCover);
 
       document.getElementById('productModalTitle').textContent = `تعديل المنتج: ${prod.name}`;
       document.getElementById('prodSubmitBtn').textContent = 'حفظ التعديلات على Supabase';
@@ -2248,6 +2635,19 @@
       e.preventDefault();
       const editId = document.getElementById('prodEditId').value;
       const primaryUrl = document.getElementById('prodPrimaryImageUrl').value.trim();
+      const isChairCover = document.getElementById('prodIsChairCover').checked;
+      const customFeeVal = Number(document.getElementById('prodCustomFee').value) || 200;
+
+      if (isChairCover) {
+        if (currentProductColors.length === 0) {
+          showToast('يرجى إضافة لون واحد على الأقل لطقم تلبيسات الكراسي', 'error');
+          return;
+        }
+        if (currentProductPatterns.length === 0) {
+          showToast('يرجى إضافة شكل نقشة واحدة على الأقل بالصورة لطقم تلبيسات الكراسي', 'error');
+          return;
+        }
+      }
 
       const payload = {
         name: document.getElementById('prodName').value.trim(),
@@ -2262,8 +2662,24 @@
         inStock: document.getElementById('prodInStock').checked,
         isFeatured: document.getElementById('prodIsFeatured').checked,
         isOnSale: document.getElementById('prodIsOnSale').checked,
-        isChairCover: document.getElementById('prodIsChairCover').checked,
+        isChairCover: isChairCover,
+        customFee: isChairCover ? customFeeVal : null,
       };
+
+      if (isChairCover) {
+        const variants = [];
+        currentProductColors.forEach(c => {
+          variants.push({ type: 'color', name: c.name, value: c.hex, available: true });
+        });
+        currentProductPatterns.forEach(p => {
+          variants.push({ type: 'pattern', name: p.name, value: p.name, image: p.image, available: true });
+        });
+        variants.push({ type: 'cover_type', name: 'مقاس ستاندرد قياسي', value: 'standard', priceModifier: 0, available: true });
+        variants.push({ type: 'cover_type', name: 'تفصيل عمولة بالمقاس', value: 'custom', priceModifier: customFeeVal, available: true });
+        payload.variants = variants;
+      } else {
+        payload.variants = [];
+      }
 
       const images = [];
       if (primaryUrl) {
@@ -2322,13 +2738,40 @@
     }
 
     // ── 3. CATEGORIES ──
+    let categoriesFilter = 'all';
+
+    function filterCategories(type) {
+      categoriesFilter = type;
+      ['all', 'active', 'hidden'].forEach(t => {
+        const btn = document.getElementById(`btn-cat-filter-${t}`);
+        if (!btn) return;
+        if (t === type) {
+          btn.className = 'px-3.5 py-1.5 rounded-xl text-xs font-bold bg-brand-600 text-white shadow-2xs cursor-pointer';
+        } else {
+          btn.className = 'px-3.5 py-1.5 rounded-xl text-xs font-bold bg-slate-100 text-slate-600 hover:bg-slate-200 cursor-pointer';
+        }
+      });
+      categoriesCurrentPage = 1;
+      renderCategoriesGrid();
+    }
+
     async function loadCategories() {
       try {
-        const res = await fetch(`${API_BASE}/categories`, { headers: getHeaders() });
+        const res = await fetch(`${API_BASE}/categories?all=true`, { headers: getHeaders() });
         if (!res.ok) return;
         categoriesList = await res.json();
+        
         const b = document.getElementById('badge-categories-count');
         if (b) b.textContent = categoriesList.length;
+
+        const countAll = document.getElementById('cat-count-all');
+        const countActive = document.getElementById('cat-count-active');
+        const countHidden = document.getElementById('cat-count-hidden');
+
+        if (countAll) countAll.textContent = categoriesList.length;
+        if (countActive) countActive.textContent = categoriesList.filter(c => c.is_active !== false).length;
+        if (countHidden) countHidden.textContent = categoriesList.filter(c => c.is_active === false).length;
+
         renderCategoriesGrid();
       } catch (e) {
         console.warn('Categories error:', e);
@@ -2345,30 +2788,74 @@
         return;
       }
 
-      const totalItems = categoriesList.length;
+      let filtered = categoriesList;
+      if (categoriesFilter === 'active') {
+        filtered = categoriesList.filter(c => c.is_active !== false);
+      } else if (categoriesFilter === 'hidden') {
+        filtered = categoriesList.filter(c => c.is_active === false);
+      }
+
+      if (filtered.length === 0) {
+        grid.innerHTML = `<div class="col-span-full text-center py-12 text-slate-400 bg-white rounded-2xl border border-slate-200"><i class="fa-solid fa-filter text-3xl mb-2 block opacity-40"></i>لا توجد أقسام تطابق التصفية المحددة حالياً.</div>`;
+        renderPaginationBar({ containerId: 'categories-pagination', currentPage: 1, pageSize: categoriesPageSize, totalItems: 0 });
+        return;
+      }
+
+      const totalItems = filtered.length;
       const totalPages = Math.ceil(totalItems / categoriesPageSize) || 1;
       if (categoriesCurrentPage > totalPages) categoriesCurrentPage = totalPages;
 
       const start = (categoriesCurrentPage - 1) * categoriesPageSize;
-      const pageItems = categoriesList.slice(start, start + categoriesPageSize);
+      const pageItems = filtered.slice(start, start + categoriesPageSize);
 
       pageItems.forEach(c => {
+        const isActive = c.is_active !== false;
         const card = document.createElement('div');
-        card.className = 'bg-white rounded-2xl border border-slate-200 p-4 shadow-sm flex flex-col justify-between';
+        card.className = `bg-white rounded-2xl border transition-all p-4 shadow-sm flex flex-col justify-between ${
+          isActive ? 'border-slate-200' : 'border-amber-300 bg-amber-50/20'
+        }`;
         card.innerHTML = `
-          <div class="flex items-center gap-4">
-            <img src="${c.image || c.image_url || 'https://placehold.co/80x80?text=Category'}" class="w-16 h-16 rounded-xl object-cover border border-slate-100" />
-            <div class="flex-1">
-              <h3 class="font-bold text-sm text-slate-900">${c.name || c.name_ar}</h3>
-              <div class="text-[10px] text-slate-400 font-mono">${c.slug}</div>
-              <div class="text-[11px] text-slate-500 mt-1 line-clamp-1">${c.description || ''}</div>
+          <div>
+            <div class="flex items-start justify-between gap-3 mb-3">
+              <div class="flex items-center gap-3">
+                <img src="${c.image || c.image_url || 'https://placehold.co/80x80?text=Category'}" class="w-16 h-16 rounded-xl object-cover border border-slate-200 shadow-2xs" />
+                <div>
+                  <h3 class="font-bold text-sm text-slate-900">${c.name || c.name_ar}</h3>
+                  <div class="text-[10px] text-slate-400 font-mono">${c.slug}</div>
+                  <div class="text-[11px] text-slate-500 mt-1 line-clamp-1">${c.description || ''}</div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Status & Visibility Badge -->
+            <div class="flex items-center justify-between mb-3 bg-slate-50 p-2 rounded-xl border border-slate-100">
+              <span class="text-xs text-slate-600 font-bold">${c.productCount || 0} منتجات</span>
+              ${
+                isActive
+                  ? `<span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-800"><span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>معروض في المتجر</span>`
+                  : `<span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-amber-100 text-amber-800"><span class="w-1.5 h-1.5 rounded-full bg-amber-500"></span>مخفي عن العملاء</span>`
+              }
             </div>
           </div>
-          <div class="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between text-xs">
-            <span class="text-brand-600 font-bold">${c.productCount || 0} منتجات</span>
+
+          <!-- Bottom Actions -->
+          <div class="pt-3 border-t border-slate-100 flex items-center justify-between text-xs">
+            <!-- Quick Toggle Visibility Button -->
+            ${
+              isActive
+                ? `<button onclick="toggleCategoryVisibility('${c.id}', false)" class="px-2.5 py-1 text-xs font-bold rounded-lg border border-amber-300 bg-amber-50 text-amber-800 hover:bg-amber-100 transition-colors flex items-center gap-1.5 cursor-pointer" title="إخفاء هذا القسم مؤقتاً عن العملاء">
+                    <i class="fa-solid fa-eye-slash text-amber-600"></i>
+                    <span>إخفاء القسم</span>
+                   </button>`
+                : `<button onclick="toggleCategoryVisibility('${c.id}', true)" class="px-2.5 py-1 text-xs font-bold rounded-lg border border-emerald-300 bg-emerald-50 text-emerald-800 hover:bg-emerald-100 transition-colors flex items-center gap-1.5 cursor-pointer" title="إظهار هذا القسم في واجهة المتجر">
+                    <i class="fa-solid fa-eye text-emerald-600"></i>
+                    <span>إظهار في المتجر</span>
+                   </button>`
+            }
+
             <div class="flex items-center gap-2">
-              <button onclick="editCategory('${c.id}')" class="p-1 text-slate-400 hover:text-brand-600 cursor-pointer" title="تعديل"><i class="fa-solid fa-pen-to-square"></i></button>
-              <button onclick="confirmDeleteCategory('${c.id}', '${c.name || c.name_ar}')" class="p-1 text-slate-400 hover:text-rose-600 cursor-pointer" title="حذف"><i class="fa-solid fa-trash-can"></i></button>
+              <button onclick="editCategory('${c.id}')" class="p-1.5 text-slate-400 hover:text-brand-600 rounded-lg hover:bg-slate-100 cursor-pointer" title="تعديل"><i class="fa-solid fa-pen-to-square"></i></button>
+              <button onclick="confirmDeleteCategory('${c.id}', '${c.name || c.name_ar}')" class="p-1.5 text-slate-400 hover:text-rose-600 rounded-lg hover:bg-rose-50 cursor-pointer" title="حذف"><i class="fa-solid fa-trash-can"></i></button>
             </div>
           </div>
         `;
@@ -2386,6 +2873,40 @@
       });
     }
 
+    async function toggleCategoryVisibility(id, newStatus) {
+      try {
+        const cat = categoriesList.find(c => c.id === id);
+        const catName = cat ? (cat.name || cat.name_ar) : 'القسم';
+
+        showToast(newStatus ? `جاري إظهار قسم "${catName}" في المتجر...` : `جاري إخفاء قسم "${catName}" عن المتجر...`);
+
+        // Try PATCH toggle-visibility first
+        let res = await fetch(`${API_BASE}/categories/${id}/toggle-visibility`, {
+          method: 'PATCH',
+          headers: getHeaders(),
+          body: JSON.stringify({ is_active: newStatus }),
+        });
+
+        // Fallback to PUT if PATCH not available
+        if (!res.ok) {
+          res = await fetch(`${API_BASE}/categories/${id}`, {
+            method: 'PUT',
+            headers: getHeaders(),
+            body: JSON.stringify({ is_active: newStatus }),
+          });
+        }
+
+        if (res.ok) {
+          showToast(newStatus ? `تم إظهار قسم "${catName}" في المتجر بنجاح` : `تم إخفاء قسم "${catName}" مؤقتاً بنجاح`);
+          loadCategories();
+        } else {
+          showToast('فشل تحديث حالة ظهور القسم', 'error');
+        }
+      } catch (err) {
+        showToast('حدث خطأ أثناء تعديل حالة القسم', 'error');
+      }
+    }
+
     function setCategoriesPage(page) {
       categoriesCurrentPage = page;
       renderCategoriesGrid();
@@ -2397,9 +2918,104 @@
       renderCategoriesGrid();
     }
 
+    function updateCatActiveUi(isActive) {
+      const badge = document.getElementById('catActiveBadge');
+      const hint = document.getElementById('catActiveHint');
+      if (isActive) {
+        if (badge) {
+          badge.textContent = 'معروض';
+          badge.className = 'text-[11px] font-bold text-emerald-700';
+        }
+        if (hint) hint.textContent = 'القسم معروض حالياً في المتجر ويمكن للعملاء تصفحه والشراء منه';
+      } else {
+        if (badge) {
+          badge.textContent = 'مخفي مؤقتاً';
+          badge.className = 'text-[11px] font-bold text-amber-700';
+        }
+        if (hint) hint.textContent = 'القسم مخفي عن العملاء في المتجر ولن يظهر في القوائم أو البحث حتى تعيد تفعيله';
+      }
+    }
+
+    async function handleCatImageFileChange(input) {
+      if (!input.files || input.files.length === 0) return;
+      const file = input.files[0];
+      const statusEl = document.getElementById('catImageFileStatus');
+      const previewBox = document.getElementById('catImagePreviewBox');
+      const previewImg = document.getElementById('catImagePreviewImg');
+      const uploadStatus = document.getElementById('catImageUploadStatus');
+      const previewName = document.getElementById('catImagePreviewName');
+
+      if (statusEl) statusEl.textContent = file.name;
+      if (previewName) previewName.textContent = file.name;
+
+      // Immediate local preview so the user sees it instantly
+      const localUrl = URL.createObjectURL(file);
+      if (previewImg) previewImg.src = localUrl;
+      if (previewBox) previewBox.classList.remove('hidden');
+
+      if (uploadStatus) {
+        uploadStatus.innerHTML = '<i class="fa-solid fa-spinner fa-spin text-amber-500"></i> <span class="text-amber-600">جاري الرفع إلى التخزين السحابي...</span>';
+      }
+
+      // Read as base64 as immediate resilient fallback
+      const reader = new FileReader();
+      reader.onload = async (e) => {
+        const base64Data = e.target.result;
+
+        try {
+          const formData = new FormData();
+          formData.append('file', file);
+          const token = currentToken || localStorage.getItem('zahra_admin_token') || 'zahra-storefront-key-2026';
+          const res = await fetch(`${API_BASE}/storage/upload?bucket=categories`, {
+            method: 'POST',
+            headers: { 'Authorization': `Bearer ${token}` },
+            body: formData,
+          });
+
+          if (res.ok) {
+            const data = await res.json();
+            document.getElementById('catImageUrl').value = data.url;
+            if (uploadStatus) {
+              uploadStatus.innerHTML = '<i class="fa-solid fa-circle-check text-emerald-500"></i> <span class="text-emerald-600">تم الرفع والتخزين السحابي بنجاح</span>';
+            }
+            showToast('تم رفع صورة القسم بنجاح!');
+          } else {
+            // Fallback to base64
+            document.getElementById('catImageUrl').value = base64Data;
+            if (uploadStatus) {
+              uploadStatus.innerHTML = '<i class="fa-solid fa-circle-check text-emerald-500"></i> <span class="text-emerald-600">تم حفظ الصورة محلياً بنجاح</span>';
+            }
+          }
+        } catch (err) {
+          // Fallback to base64
+          document.getElementById('catImageUrl').value = base64Data;
+          if (uploadStatus) {
+            uploadStatus.innerHTML = '<i class="fa-solid fa-circle-check text-emerald-500"></i> <span class="text-emerald-600">تم حفظ الصورة محلياً بنجاح</span>';
+          }
+        }
+      };
+      reader.readAsDataURL(file);
+    }
+
+    function clearCatImage() {
+      const fileInput = document.getElementById('catImageFile');
+      if (fileInput) fileInput.value = '';
+      const urlInput = document.getElementById('catImageUrl');
+      if (urlInput) urlInput.value = '';
+      const statusEl = document.getElementById('catImageFileStatus');
+      if (statusEl) statusEl.textContent = 'لم يتم اختيار صورة بعد';
+      const previewBox = document.getElementById('catImagePreviewBox');
+      if (previewBox) previewBox.classList.add('hidden');
+      const previewImg = document.getElementById('catImagePreviewImg');
+      if (previewImg) previewImg.src = '';
+    }
+
     function openCategoryModal() {
       document.getElementById('categoryForm').reset();
       document.getElementById('catEditId').value = '';
+      clearCatImage();
+      document.getElementById('catIsActive').checked = true;
+      updateCatActiveUi(true);
       document.getElementById('categoryModalTitle').textContent = 'إضافة قسم جديد';
       document.getElementById('categoryModal').classList.remove('hidden');
     }
@@ -2412,7 +3028,23 @@
       document.getElementById('catName').value = cat.name || cat.name_ar;
       document.getElementById('catSlug').value = cat.slug;
       document.getElementById('catDescription').value = cat.description || '';
-      document.getElementById('catImageUrl').value = cat.image || cat.image_url || '';
+      
+      const imgUrl = cat.image || cat.image_url || '';
+      document.getElementById('catImageUrl').value = imgUrl;
+      if (imgUrl) {
+        document.getElementById('catImagePreviewImg').src = imgUrl;
+        document.getElementById('catImagePreviewBox').classList.remove('hidden');
+        document.getElementById('catImageFileStatus').textContent = 'صورة مسجلة';
+        document.getElementById('catImagePreviewName').textContent = 'الصورة الحالية للقسم';
+        document.getElementById('catImageUploadStatus').innerHTML = '<i class="fa-solid fa-circle-check text-slate-500"></i> <span class="text-slate-600">صورة القسم الحالية</span>';
+      } else {
+        clearCatImage();
+      }
+
+      const isActive = cat.is_active !== false;
+      document.getElementById('catIsActive').checked = isActive;
+      updateCatActiveUi(isActive);
+
       document.getElementById('catSortOrder').value = cat.sort_order || 1;
       document.getElementById('catIsFeatured').checked = !!cat.featured || !!cat.is_featured;
 
@@ -2427,13 +3059,21 @@
     async function handleCategorySubmit(e) {
       e.preventDefault();
       const editId = document.getElementById('catEditId').value;
+      const imageUrl = document.getElementById('catImageUrl').value.trim();
+
+      if (!imageUrl && !editId) {
+        showToast('يرجى اختيار ورفع صورة للقسم أولاً', 'error');
+        return;
+      }
+
       const payload = {
         name_ar: document.getElementById('catName').value.trim(),
         slug: document.getElementById('catSlug').value.trim(),
         description: document.getElementById('catDescription').value.trim(),
-        image_url: document.getElementById('catImageUrl').value.trim(),
+        image_url: imageUrl,
         sort_order: Number(document.getElementById('catSortOrder').value),
         is_featured: document.getElementById('catIsFeatured').checked,
+        is_active: document.getElementById('catIsActive').checked,
       };
 
       try {
@@ -2742,6 +3382,9 @@
         if (item.selectedVariants) {
           variantsText = Object.entries(item.selectedVariants).map(([k, v]) => `${k}: ${v}`).join(' | ');
         }
+        if (item.customChairImage) {
+          variantsText += (variantsText ? ' | ' : '') + 'تفصيل عمولة بالمقاس (مرفق صورة الكرسي)';
+        }
         return `
           <tr>
             <td style="padding: 8px; text-align: center; border-bottom: 1px solid #e2e8f0;">${idx + 1}</td>
@@ -3031,6 +3674,17 @@
                     ${item.selectedVariants ? `
                       <div class="text-[10px] text-brand-600 mt-1">
                         ${Object.entries(item.selectedVariants).map(([k, v]) => `${k}: <b>${v}</b>`).join(' | ')}
+                      </div>
+                    ` : ''}
+                    ${item.customChairImage ? `
+                      <div class="mt-2 p-2 bg-amber-50 rounded-lg border border-amber-200 flex items-center justify-between gap-2">
+                        <div class="flex items-center gap-1.5">
+                          <span class="w-2 h-2 rounded-full bg-amber-500"></span>
+                          <span class="text-[11px] font-bold text-amber-900">طقم تفصيل عمولة بمقاس الكرسي</span>
+                        </div>
+                        <a href="${item.customChairImage}" target="_blank" class="inline-flex items-center gap-1 px-2.5 py-1 bg-amber-600 hover:bg-amber-700 text-white rounded-lg text-[10px] font-bold shadow-xs transition-colors cursor-pointer">
+                          <i class="fa-solid fa-camera"></i> معاينة صورة كرسي العميل
+                        </a>
                       </div>
                     ` : ''}
                   </div>

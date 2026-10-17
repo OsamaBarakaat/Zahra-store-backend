@@ -6,7 +6,7 @@ export declare class ProductImageDto {
 export declare class ProductVariantDto {
     type: string;
     name: string;
-    value: string;
+    value?: string;
     priceModifier?: number;
     available?: boolean;
     image?: string;
@@ -24,6 +24,7 @@ export declare class CreateProductDto {
     stockCount?: number;
     inStock?: boolean;
     isChairCover?: boolean;
+    customFee?: number;
     isFeatured?: boolean;
     isOnSale?: boolean;
     isNew?: boolean;

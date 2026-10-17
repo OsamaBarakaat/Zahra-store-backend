@@ -149,6 +149,10 @@ export declare class ProductsService {
         dimensions: any;
         isChairCover: any;
         is_chair_cover: any;
+        customFee: number;
+        custom_fee: number;
+        availableColors: any;
+        availablePatterns: any;
     }[]>;
     findBySlug(slug: string): Promise<{
         id: string;
@@ -293,6 +297,10 @@ export declare class ProductsService {
         dimensions: any;
         isChairCover: any;
         is_chair_cover: any;
+        customFee: number;
+        custom_fee: number;
+        availableColors: any;
+        availablePatterns: any;
     }>;
     getFeatured(): Promise<({
         id: string;
@@ -437,6 +445,10 @@ export declare class ProductsService {
         dimensions: any;
         isChairCover: any;
         is_chair_cover: any;
+        customFee: number;
+        custom_fee: number;
+        availableColors: any;
+        availablePatterns: any;
     }[]>;
     getSale(): Promise<({
         id: string;
@@ -581,6 +593,10 @@ export declare class ProductsService {
         dimensions: any;
         isChairCover: any;
         is_chair_cover: any;
+        customFee: number;
+        custom_fee: number;
+        availableColors: any;
+        availablePatterns: any;
     }[]>;
     search(q: string): Promise<({
         id: string;
@@ -725,6 +741,10 @@ export declare class ProductsService {
         dimensions: any;
         isChairCover: any;
         is_chair_cover: any;
+        customFee: number;
+        custom_fee: number;
+        availableColors: any;
+        availablePatterns: any;
     }[]>;
     create(dto: CreateProductDto): Promise<any>;
     update(id: string, dto: UpdateProductDto): Promise<{
@@ -870,6 +890,10 @@ export declare class ProductsService {
         dimensions: any;
         isChairCover: any;
         is_chair_cover: any;
+        customFee: number;
+        custom_fee: number;
+        availableColors: any;
+        availablePatterns: any;
     }>;
     toggleStock(id: string, inStock: boolean): Promise<{
         id: string;
@@ -893,6 +917,7 @@ export declare class ProductsService {
         in_stock: boolean;
         stock_quantity: number;
         is_chair_cover: boolean;
+        custom_fee: import("@prisma/client/runtime/library").Decimal | null;
         sku: string | null;
         tags: string | null;
     } | {
@@ -1027,6 +1052,7 @@ export declare class ProductsService {
         in_stock: boolean;
         stock_quantity: number;
         is_chair_cover: boolean;
+        custom_fee: import("@prisma/client/runtime/library").Decimal | null;
         sku: string | null;
         tags: string | null;
     } | {

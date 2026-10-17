@@ -59,9 +59,9 @@ __decorate([
     __metadata("design:type", String)
 ], ProductVariantDto.prototype, "name", void 0);
 __decorate([
-    (0, swagger_1.ApiProperty)({ example: '#A34E62' }),
+    (0, swagger_1.ApiPropertyOptional)({ example: '#A34E62' }),
+    (0, class_validator_1.IsOptional)(),
     (0, class_validator_1.IsString)(),
-    (0, class_validator_1.IsNotEmpty)(),
     __metadata("design:type", String)
 ], ProductVariantDto.prototype, "value", void 0);
 __decorate([
@@ -95,6 +95,7 @@ class CreateProductDto {
     stockCount;
     inStock;
     isChairCover;
+    customFee;
     isFeatured;
     isOnSale;
     isNew;
@@ -173,6 +174,12 @@ __decorate([
     (0, class_validator_1.IsBoolean)(),
     __metadata("design:type", Boolean)
 ], CreateProductDto.prototype, "isChairCover", void 0);
+__decorate([
+    (0, swagger_1.ApiPropertyOptional)({ example: 200, default: 200, description: 'سعر العمولة الإضافي' }),
+    (0, class_validator_1.IsOptional)(),
+    (0, class_validator_1.IsNumber)(),
+    __metadata("design:type", Number)
+], CreateProductDto.prototype, "customFee", void 0);
 __decorate([
     (0, swagger_1.ApiPropertyOptional)({ example: false, default: false }),
     (0, class_validator_1.IsOptional)(),

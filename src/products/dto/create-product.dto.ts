@@ -38,10 +38,10 @@ export class ProductVariantDto {
   @IsNotEmpty()
   name: string;
 
-  @ApiProperty({ example: '#A34E62' })
+  @ApiPropertyOptional({ example: '#A34E62' })
+  @IsOptional()
   @IsString()
-  @IsNotEmpty()
-  value: string;
+  value?: string;
 
   @ApiPropertyOptional({ example: 0, default: 0 })
   @IsOptional()
@@ -118,6 +118,11 @@ export class CreateProductDto {
   @IsOptional()
   @IsBoolean()
   isChairCover?: boolean;
+
+  @ApiPropertyOptional({ example: 200, default: 200, description: 'سعر العمولة الإضافي' })
+  @IsOptional()
+  @IsNumber()
+  customFee?: number;
 
   @ApiPropertyOptional({ example: false, default: false })
   @IsOptional()

@@ -4,7 +4,7 @@ import { PrismaClient } from '@prisma/client';
 @Injectable()
 export class PrismaService extends PrismaClient implements OnModuleInit, OnModuleDestroy {
   private readonly logger = new Logger(PrismaService.name);
-  public isConnected = true;
+  public isConnected = false;
 
   constructor() {
     super({
@@ -22,6 +22,7 @@ export class PrismaService extends PrismaClient implements OnModuleInit, OnModul
       this.isConnected = true;
       this.logger.log('✅ Successfully connected to PostgreSQL / Supabase Database via Prisma.');
     } catch (error) {
+      this.isConnected = false;
       this.logger.warn('⚠️ Prisma connect note: ' + (error?.message || error));
     }
   }

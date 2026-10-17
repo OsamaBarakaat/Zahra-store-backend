@@ -64,6 +64,8 @@ let RolesGuard = class RolesGuard {
             return true;
         if (path.includes('categor') && perms.includes('categories'))
             return true;
+        if ((path.includes('storage') || path.includes('upload')) && (perms.includes('products') || perms.includes('categories')))
+            return true;
         if (path.includes('customer') && perms.includes('customers'))
             return true;
         if (path.includes('expense') && perms.includes('expenses'))

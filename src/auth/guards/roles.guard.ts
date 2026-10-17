@@ -62,6 +62,7 @@ export class RolesGuard implements CanActivate {
     if (path.includes('chair') && perms.includes('custom_chairs')) return true;
     if (path.includes('product') && perms.includes('products')) return true;
     if (path.includes('categor') && perms.includes('categories')) return true;
+    if ((path.includes('storage') || path.includes('upload')) && (perms.includes('products') || perms.includes('categories'))) return true;
     if (path.includes('customer') && perms.includes('customers')) return true;
     if (path.includes('expense') && perms.includes('expenses')) return true;
     if (path.includes('shipping') && perms.includes('shipping')) return true;

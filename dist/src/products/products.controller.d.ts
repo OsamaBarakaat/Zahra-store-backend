@@ -148,6 +148,10 @@ export declare class ProductsController {
         dimensions: any;
         isChairCover: any;
         is_chair_cover: any;
+        customFee: number;
+        custom_fee: number;
+        availableColors: any;
+        availablePatterns: any;
     }[]>;
     getFeatured(): Promise<({
         id: string;
@@ -292,6 +296,10 @@ export declare class ProductsController {
         dimensions: any;
         isChairCover: any;
         is_chair_cover: any;
+        customFee: number;
+        custom_fee: number;
+        availableColors: any;
+        availablePatterns: any;
     }[]>;
     getSale(): Promise<({
         id: string;
@@ -436,6 +444,10 @@ export declare class ProductsController {
         dimensions: any;
         isChairCover: any;
         is_chair_cover: any;
+        customFee: number;
+        custom_fee: number;
+        availableColors: any;
+        availablePatterns: any;
     }[]>;
     findBySlug(slug: string): Promise<{
         id: string;
@@ -580,6 +592,10 @@ export declare class ProductsController {
         dimensions: any;
         isChairCover: any;
         is_chair_cover: any;
+        customFee: number;
+        custom_fee: number;
+        availableColors: any;
+        availablePatterns: any;
     }>;
     create(createProductDto: CreateProductDto): Promise<any>;
     update(id: string, updateProductDto: UpdateProductDto): Promise<{
@@ -725,6 +741,10 @@ export declare class ProductsController {
         dimensions: any;
         isChairCover: any;
         is_chair_cover: any;
+        customFee: number;
+        custom_fee: number;
+        availableColors: any;
+        availablePatterns: any;
     }>;
     toggleStock(id: string, inStock: boolean): Promise<{
         id: string;
@@ -748,6 +768,7 @@ export declare class ProductsController {
         in_stock: boolean;
         stock_quantity: number;
         is_chair_cover: boolean;
+        custom_fee: import("@prisma/client/runtime/library").Decimal | null;
         sku: string | null;
         tags: string | null;
     } | {
@@ -882,6 +903,7 @@ export declare class ProductsController {
         in_stock: boolean;
         stock_quantity: number;
         is_chair_cover: boolean;
+        custom_fee: import("@prisma/client/runtime/library").Decimal | null;
         sku: string | null;
         tags: string | null;
     } | {

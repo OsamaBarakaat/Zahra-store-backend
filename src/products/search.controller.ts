@@ -7,13 +7,10 @@ import { Roles } from '../auth/decorators/roles.decorator';
 
 @ApiTags('Search (البحث)')
 @Controller('search')
-@UseGuards(JwtAuthGuard, RolesGuard)
-@ApiBearerAuth('JWT')
 export class SearchController {
   constructor(private readonly productsService: ProductsService) {}
 
   @Get()
-  @Roles('ADMIN', 'MANAGER', 'SUPPORT', 'CUSTOM')
   @ApiOperation({ summary: 'البحث النصي الذكي عن المنتجات' })
   @ApiQuery({ name: 'q', required: true, description: 'كلمة البحث' })
   search(@Query('q') query: string) {

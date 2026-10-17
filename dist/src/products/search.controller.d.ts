@@ -145,5 +145,9 @@ export declare class SearchController {
         dimensions: any;
         isChairCover: any;
         is_chair_cover: any;
+        customFee: number;
+        custom_fee: number;
+        availableColors: any;
+        availablePatterns: any;
     }[]>;
 }

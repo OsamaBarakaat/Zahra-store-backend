@@ -3,6 +3,7 @@ import {
   Get,
   Post,
   Put,
+  Patch,
   Delete,
   Param,
   Body,
@@ -19,28 +20,25 @@ import { Roles } from '../auth/decorators/roles.decorator';
 
 @ApiTags('Categories (الأقسام والتصنيفات)')
 @Controller('categories')
-@UseGuards(JwtAuthGuard, RolesGuard)
-@ApiBearerAuth('JWT')
 export class CategoriesController {
   constructor(private readonly categoriesService: CategoriesService) {}
 
   @Get()
-  @Roles('ADMIN', 'MANAGER', 'SUPPORT', 'CUSTOM')
-  @ApiOperation({ summary: 'عرض جميع الأقسام النشطة' })
+  @ApiOperation({ summary: 'عرض الأقسام (يمكن جلب الكل للوحة التحكم أو النشطة فقط للمتجر)' })
   @ApiQuery({ name: 'activeOnly', required: false, type: Boolean })
-  findAll(@Query('activeOnly') activeOnly?: string) {
-    return this.categoriesService.findAll(activeOnly === 'true');
+  @ApiQuery({ name: 'all', required: false, type: Boolean })
+  findAll(@Query('activeOnly') activeOnly?: string, @Query('all') all?: string) {
+    const showAll = all === 'true' || activeOnly === 'false';
+    return this.categoriesService.findAll(!showAll);
   }
 
   @Get(':slug')
-  @Roles('ADMIN', 'MANAGER', 'SUPPORT', 'CUSTOM')
   @ApiOperation({ summary: 'عرض تفاصيل قسم محدد عبر الـ slug' })
   findBySlug(@Param('slug') slug: string) {
     return this.categoriesService.findBySlug(slug);
   }
 
   @Get(':slug/products')
-  @Roles('ADMIN', 'MANAGER', 'SUPPORT', 'CUSTOM')
   @ApiOperation({ summary: 'عرض منتجات قسم محدد' })
   findCategoryProducts(@Param('slug') slug: string) {
     return this.categoriesService.findProducts(slug);
@@ -64,6 +62,15 @@ export class CategoriesController {
     return this.categoriesService.update(id, updateCategoryDto);
   }
 
+  @Patch(':id/toggle-visibility')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles('ADMIN')
+  @ApiBearerAuth('JWT')
+  @ApiOperation({ summary: 'إظهار أو إخفاء القسم من المتجر (Admin)' })
+  toggleVisibility(@Param('id') id: string, @Body('is_active') is_active?: boolean) {
+    return this.categoriesService.toggleVisibility(id, is_active);
+  }
+
   @Delete(':id')
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles('ADMIN')
@@ -73,3 +80,4 @@ export class CategoriesController {
     return this.categoriesService.delete(id);
   }
 }
+

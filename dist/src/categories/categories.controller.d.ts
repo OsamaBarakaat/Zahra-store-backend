@@ -4,7 +4,7 @@ import { UpdateCategoryDto } from './dto/update-category.dto';
 export declare class CategoriesController {
     private readonly categoriesService;
     constructor(categoriesService: CategoriesService);
-    findAll(activeOnly?: string): Promise<{
+    findAll(activeOnly?: string, all?: string): Promise<{
         id: string;
         slug: string;
         name: string;
@@ -113,6 +113,31 @@ export declare class CategoriesController {
         id: string;
     }>;
     update(id: string, updateCategoryDto: UpdateCategoryDto): Promise<{
+        id: string;
+        is_active: boolean;
+        created_at: Date;
+        updated_at: Date;
+        slug: string;
+        name_ar: string;
+        description: string | null;
+        image_url: string | null;
+        sort_order: number;
+        is_featured: boolean;
+    } | {
+        id: string;
+        slug: string;
+        name: string;
+        name_ar: string;
+        description: string;
+        image: string;
+        image_url: string;
+        productCount: number;
+        featured: boolean;
+        is_featured: boolean;
+        sort_order: number;
+        is_active: boolean;
+    }>;
+    toggleVisibility(id: string, is_active?: boolean): Promise<{
         id: string;
         is_active: boolean;
         created_at: Date;

@@ -21,34 +21,28 @@ import { Roles } from '../auth/decorators/roles.decorator';
 
 @ApiTags('Products (المنتجات)')
 @Controller('products')
-@UseGuards(JwtAuthGuard, RolesGuard)
-@ApiBearerAuth('JWT')
 export class ProductsController {
   constructor(private readonly productsService: ProductsService) {}
 
   @Get()
-  @Roles('ADMIN', 'MANAGER', 'SUPPORT', 'CUSTOM')
   @ApiOperation({ summary: 'تصفح جميع المنتجات مع الفلترة والترتيب والبحث' })
   findAll(@Query() query: QueryProductsDto) {
     return this.productsService.findAll(query);
   }
 
   @Get('featured')
-  @Roles('ADMIN', 'MANAGER', 'SUPPORT', 'CUSTOM')
   @ApiOperation({ summary: 'عرض المنتجات المميزة' })
   getFeatured() {
     return this.productsService.getFeatured();
   }
 
   @Get('sale')
-  @Roles('ADMIN', 'MANAGER', 'SUPPORT', 'CUSTOM')
   @ApiOperation({ summary: 'عرض المنتجات ذات الخصومات والعروض' })
   getSale() {
     return this.productsService.getSale();
   }
 
   @Get(':slug')
-  @Roles('ADMIN', 'MANAGER', 'SUPPORT', 'CUSTOM')
   @ApiOperation({ summary: 'عرض تفاصيل منتج عبر الـ Slug' })
   findBySlug(@Param('slug') slug: string) {
     return this.productsService.findBySlug(slug);

@@ -186,6 +186,24 @@ export class ProductsService {
       dimensions: p.dimensions,
       isChairCover: p.is_chair_cover,
       is_chair_cover: p.is_chair_cover,
+      customFee: p.custom_fee !== null && p.custom_fee !== undefined ? Number(p.custom_fee) : (p.is_chair_cover ? 200 : 0),
+      custom_fee: p.custom_fee !== null && p.custom_fee !== undefined ? Number(p.custom_fee) : (p.is_chair_cover ? 200 : 0),
+      availableColors: (p.variants || [])
+        .filter((v: any) => v.variant_type === 'color' || v.type === 'color')
+        .map((v: any) => ({
+          id: v.id,
+          name: v.name_ar || v.name,
+          hex: v.value,
+          available: v.is_available ?? v.available ?? true,
+        })),
+      availablePatterns: (p.variants || [])
+        .filter((v: any) => v.variant_type === 'pattern' || v.type === 'pattern')
+        .map((v: any) => ({
+          id: v.id,
+          name: v.name_ar || v.name,
+          image: v.image_url || v.image,
+          available: v.is_available ?? v.available ?? true,
+        })),
     };
   }
 
@@ -294,60 +312,65 @@ export class ProductsService {
 
   async create(dto: CreateProductDto) {
     if (this.prisma.isConnected) {
-      // Find category by slug or id
-      let cat = await this.prisma.category.findUnique({ where: { slug: dto.category } });
-      if (!cat) {
-        cat = await this.prisma.category.findUnique({ where: { id: dto.category } });
-      }
-      if (!cat) {
-        // Fallback: take first category
-        cat = await this.prisma.category.findFirst();
-      }
+      try {
+        // Find category by slug or id
+        let cat = await this.prisma.category.findUnique({ where: { slug: dto.category } });
+        if (!cat) {
+          cat = await this.prisma.category.findUnique({ where: { id: dto.category } });
+        }
+        if (!cat) {
+          // Fallback: take first category
+          cat = await this.prisma.category.findFirst();
+        }
 
-      const created = await this.prisma.product.create({
-        data: {
-          category_id: cat?.id || '',
-          name_ar: dto.name,
-          slug: dto.slug,
-          description_ar: dto.description,
-          base_price: dto.price,
-          original_price: dto.originalPrice,
-          discount_percent: dto.discount,
-          material: dto.material,
-          dimensions: dto.dimensions,
-          stock_quantity: dto.stockCount ?? 10,
-          in_stock: dto.inStock ?? true,
-          is_chair_cover: dto.isChairCover ?? false,
-          is_featured: dto.isFeatured ?? false,
-          isOnSale: dto.isOnSale ?? false,
-          is_new: dto.isNew ?? true,
-          images: {
-            create: (dto.images || []).map((img, i) => ({
-              image_url: img.url,
-              alt_text: img.alt || dto.name,
-              is_primary: img.is_primary ?? i === 0,
-              sort_order: i + 1,
-            })),
+        const created = await this.prisma.product.create({
+          data: {
+            category_id: cat?.id || '',
+            name_ar: dto.name,
+            slug: dto.slug,
+            description_ar: dto.description,
+            base_price: dto.price,
+            original_price: dto.originalPrice,
+            discount_percent: dto.discount,
+            material: dto.material,
+            dimensions: dto.dimensions,
+            stock_quantity: dto.stockCount ?? 10,
+            in_stock: dto.inStock ?? true,
+            is_chair_cover: dto.isChairCover ?? false,
+            custom_fee: dto.customFee !== undefined ? dto.customFee : (dto.isChairCover ? 200 : null),
+            is_featured: dto.isFeatured ?? false,
+            isOnSale: dto.isOnSale ?? false,
+            is_new: dto.isNew ?? true,
+            images: {
+              create: (dto.images || []).map((img, i) => ({
+                image_url: img.url,
+                alt_text: img.alt || dto.name,
+                is_primary: img.is_primary ?? i === 0,
+                sort_order: i + 1,
+              })),
+            },
+            variants: {
+              create: (dto.variants || []).map((v) => ({
+                variant_type: v.type,
+                name_ar: v.name,
+                value: v.value || v.name || '',
+                price_adjustment: v.priceModifier ?? 0,
+                is_available: v.available ?? true,
+                image_url: v.image,
+              })),
+            },
           },
-          variants: {
-            create: (dto.variants || []).map((v) => ({
-              variant_type: v.type,
-              name_ar: v.name,
-              value: v.value,
-              price_adjustment: v.priceModifier ?? 0,
-              is_available: v.available ?? true,
-              image_url: v.image,
-            })),
+          include: {
+            category: true,
+            images: { orderBy: [{ is_primary: 'desc' }, { sort_order: 'asc' }] },
+            variants: true,
           },
-        },
-        include: {
-          category: true,
-          images: { orderBy: [{ is_primary: 'desc' }, { sort_order: 'asc' }] },
-          variants: true,
-        },
-      });
+        });
 
-      return this.mapPrismaProduct(created);
+        return this.mapPrismaProduct(created);
+      } catch (err) {
+        console.warn('Prisma create failed, falling back to mock:', err.message);
+      }
     }
 
     const newProd: any = {
@@ -355,6 +378,13 @@ export class ProductsService {
       ...dto,
       images: (dto.images || []).map((img, i) => ({ id: `img-${i}`, ...img })),
       variants: (dto.variants || []).map((v, i) => ({ id: `v-${i}`, ...v })),
+      customFee: dto.customFee !== undefined ? dto.customFee : (dto.isChairCover ? 200 : 0),
+      availableColors: (dto.variants || [])
+        .filter((v: any) => v.type === 'color' || v.variant_type === 'color')
+        .map((v: any) => ({ id: `c-${v.name}`, name: v.name, hex: v.value, available: true })),
+      availablePatterns: (dto.variants || [])
+        .filter((v: any) => v.type === 'pattern' || v.variant_type === 'pattern')
+        .map((v: any) => ({ id: `p-${v.name}`, name: v.name, image: v.image, available: true })),
       rating: 5.0,
       reviewCount: 0,
     };
@@ -364,78 +394,101 @@ export class ProductsService {
 
   async update(id: string, dto: UpdateProductDto) {
     if (this.prisma.isConnected) {
-      const prod = await this.prisma.product.findFirst({
-        where: { OR: [{ id }, { slug: id }] },
-      });
-      if (!prod) throw new NotFoundException('المنتج غير موجود');
-
-      let categoryId = prod.category_id;
-      if (dto.category) {
-        let cat = await this.prisma.category.findUnique({ where: { slug: dto.category } });
-        if (!cat) cat = await this.prisma.category.findUnique({ where: { id: dto.category } });
-        if (cat) categoryId = cat.id;
-      }
-
-      if (dto.images && dto.images.length > 0) {
-        await this.prisma.productImage.deleteMany({ where: { product_id: prod.id } });
-        await this.prisma.productImage.createMany({
-          data: dto.images.map((img, i) => ({
-            product_id: prod.id,
-            image_url: img.url,
-            alt_text: img.alt || dto.name || prod.name_ar,
-            is_primary: img.is_primary ?? i === 0,
-            sort_order: i + 1,
-          })),
+      try {
+        const prod = await this.prisma.product.findFirst({
+          where: { OR: [{ id }, { slug: id }] },
         });
+        if (prod) {
+          let categoryId = prod.category_id;
+          if (dto.category) {
+            let cat = await this.prisma.category.findUnique({ where: { slug: dto.category } });
+            if (!cat) cat = await this.prisma.category.findUnique({ where: { id: dto.category } });
+            if (cat) categoryId = cat.id;
+          }
+
+          if (dto.images && dto.images.length > 0) {
+            await this.prisma.productImage.deleteMany({ where: { product_id: prod.id } });
+            await this.prisma.productImage.createMany({
+              data: dto.images.map((img, i) => ({
+                product_id: prod.id,
+                image_url: img.url,
+                alt_text: img.alt || dto.name || prod.name_ar,
+                is_primary: img.is_primary ?? i === 0,
+                sort_order: i + 1,
+              })),
+            });
+          }
+
+          if (dto.variants !== undefined) {
+            await this.prisma.productVariant.deleteMany({ where: { product_id: prod.id } });
+            if (dto.variants.length > 0) {
+              await this.prisma.productVariant.createMany({
+                data: dto.variants.map((v) => ({
+                  product_id: prod.id,
+                  variant_type: v.type,
+                  name_ar: v.name,
+                  value: v.value || v.name || '',
+                  price_adjustment: v.priceModifier ?? 0,
+                  is_available: v.available ?? true,
+                  image_url: v.image,
+                })),
+              });
+            }
+          }
+
+          const updated = await this.prisma.product.update({
+            where: { id: prod.id },
+            data: {
+              category_id: categoryId,
+              name_ar: dto.name,
+              slug: dto.slug,
+              description_ar: dto.description,
+              base_price: dto.price !== undefined ? dto.price : undefined,
+              original_price: dto.originalPrice !== undefined ? dto.originalPrice : undefined,
+              discount_percent: dto.discount !== undefined ? dto.discount : undefined,
+              material: dto.material,
+              dimensions: dto.dimensions,
+              stock_quantity: dto.stockCount !== undefined ? dto.stockCount : undefined,
+              in_stock: dto.inStock !== undefined ? dto.inStock : undefined,
+              is_chair_cover: dto.isChairCover !== undefined ? dto.isChairCover : undefined,
+              custom_fee: dto.customFee !== undefined ? dto.customFee : (dto.isChairCover ? 200 : undefined),
+              is_featured: dto.isFeatured !== undefined ? dto.isFeatured : undefined,
+              isOnSale: dto.isOnSale !== undefined ? dto.isOnSale : undefined,
+              is_new: dto.isNew !== undefined ? dto.isNew : undefined,
+            },
+            include: {
+              category: true,
+              images: { orderBy: [{ is_primary: 'desc' }, { sort_order: 'asc' }] },
+              variants: true,
+            },
+          });
+
+          return this.mapPrismaProduct(updated);
+        }
+      } catch (err) {
+        console.warn('Prisma update failed, falling back to mock:', err.message);
       }
-
-      if (dto.variants && dto.variants.length > 0) {
-        await this.prisma.productVariant.deleteMany({ where: { product_id: prod.id } });
-        await this.prisma.productVariant.createMany({
-          data: dto.variants.map((v) => ({
-            product_id: prod.id,
-            variant_type: v.type,
-            name_ar: v.name,
-            value: v.value,
-            price_adjustment: v.priceModifier ?? 0,
-            is_available: v.available ?? true,
-            image_url: v.image,
-          })),
-        });
-      }
-
-      const updated = await this.prisma.product.update({
-        where: { id: prod.id },
-        data: {
-          category_id: categoryId,
-          name_ar: dto.name,
-          slug: dto.slug,
-          description_ar: dto.description,
-          base_price: dto.price !== undefined ? dto.price : undefined,
-          original_price: dto.originalPrice !== undefined ? dto.originalPrice : undefined,
-          discount_percent: dto.discount !== undefined ? dto.discount : undefined,
-          material: dto.material,
-          dimensions: dto.dimensions,
-          stock_quantity: dto.stockCount !== undefined ? dto.stockCount : undefined,
-          in_stock: dto.inStock !== undefined ? dto.inStock : undefined,
-          is_chair_cover: dto.isChairCover !== undefined ? dto.isChairCover : undefined,
-          is_featured: dto.isFeatured !== undefined ? dto.isFeatured : undefined,
-          isOnSale: dto.isOnSale !== undefined ? dto.isOnSale : undefined,
-          is_new: dto.isNew !== undefined ? dto.isNew : undefined,
-        },
-        include: {
-          category: true,
-          images: { orderBy: [{ is_primary: 'desc' }, { sort_order: 'asc' }] },
-          variants: true,
-        },
-      });
-
-      return this.mapPrismaProduct(updated);
     }
 
     const idx = MOCK_PRODUCTS.findIndex((p) => p.id === id || p.slug === id);
     if (idx !== -1) {
-      MOCK_PRODUCTS[idx] = { ...MOCK_PRODUCTS[idx], ...dto } as any;
+      const mergedVariants = dto.variants !== undefined ? dto.variants : MOCK_PRODUCTS[idx].variants;
+      const isChairCover = dto.isChairCover !== undefined ? dto.isChairCover : MOCK_PRODUCTS[idx].isChairCover;
+      const customFee = dto.customFee !== undefined ? dto.customFee : (isChairCover ? 200 : 0);
+
+      MOCK_PRODUCTS[idx] = {
+        ...MOCK_PRODUCTS[idx],
+        ...dto,
+        isChairCover,
+        customFee,
+        variants: (mergedVariants || []).map((v: any, i: number) => ({ id: v.id || `v-${i}`, ...v })),
+        availableColors: (mergedVariants || [])
+          .filter((v: any) => v.type === 'color' || v.variant_type === 'color')
+          .map((v: any) => ({ id: `c-${v.name}`, name: v.name, hex: v.value, available: true })),
+        availablePatterns: (mergedVariants || [])
+          .filter((v: any) => v.type === 'pattern' || v.variant_type === 'pattern')
+          .map((v: any) => ({ id: `p-${v.name}`, name: v.name, image: v.image, available: true })),
+      } as any;
       return MOCK_PRODUCTS[idx];
     }
     throw new NotFoundException('المنتج غير موجود');
